@@ -18,3 +18,39 @@
     background-color: #B0F566;
     color: #444;
 }
+
+
+._pb_toolbar {
+    position: absolute;
+    border-radius: 3px;
+    background-color: #444;
+    color: white;
+    display: flex;
+    align-items: center;
+    padding: 2px 4px;
+}
+._pb_toolbar:after {
+    content: "";
+    display: block;
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    margin-left: -8px;
+    border-top: 8px solid #444;
+    border-right: 8px solid transparent;
+    border-left: 8px solid transparent;
+}
+._pb_toolbar ._pb_button {
+    display: block;
+    padding: 3px;
+}
+._pb_toolbar ._pb_button .material-icons {
+    font-size: 18px;
+    vertical-align: middle;
+}
+._pb_toolbar ._pb_divider {
+    display: block;
+    width: 1px;
+    height: 18px;
+    background-color: #888;
+}
