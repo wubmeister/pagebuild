@@ -8,22 +8,21 @@
     height: 24px;
     padding: 3px;
     border-radius: 50%;
-    background-color: #444;
+    background-color: #424242;
     color: white;
 }
 ._pb_circle_button .material-icons {
     font-size: 18px;
 }
 ._pb_circle_button._pb_green {
-    background-color: #B0F566;
-    color: #444;
+    background-color: #43A047;
 }
 
 
 ._pb_toolbar {
     position: absolute;
     border-radius: 3px;
-    background-color: #444;
+    background-color: #424242;
     color: white;
     display: flex;
     align-items: center;
@@ -36,7 +35,7 @@
     bottom: -8px;
     left: 50%;
     margin-left: -8px;
-    border-top: 8px solid #444;
+    border-top: 8px solid #424242;
     border-right: 8px solid transparent;
     border-left: 8px solid transparent;
 }
@@ -64,7 +63,7 @@
     position: absolute;
     border-radius: 3px;
     background-color: white;
-    color: #444;
+    color: #424242;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
     font: 16px sans-serif;
     z-index: 1000;
@@ -77,14 +76,14 @@
     left: 50%;
     margin-left: -8px;
     border-right: 8px solid transparent;
-    border-bottom: 8px solid #444;
+    border-bottom: 8px solid #424242;
     border-left: 8px solid transparent;
 }
 ._pb_panel > ._pb_header {
     padding: 6px 12px;
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
-    background-color: #444;
+    background-color: #424242;
     color: white;
 }
 ._pb_panel > ._pb_header > ._pb_tabs {
@@ -95,10 +94,10 @@
 }
 
 ._pb_panel._pb_blue:after {
-    border-bottom-color: #5CC9F5;
+    border-bottom-color: #1E88E5;
 }
 ._pb_panel._pb_blue > ._pb_header {
-    background-color: #5CC9F5;
+    background-color: #1E88E5;
 }
 
 ._pb_box {
@@ -108,8 +107,11 @@
 ._pb_bounding_box {
     position: absolute;
     top: 0; right: 0; bottom: 0; left: 0;
-    border: 2px solid #6638F0;
+    border: 2px solid #424242;
     border-radius: 2px;
+}
+._pb_bounding_box._pb_purple {
+    border-color: #8E24AA;
 }
 
 ._pb_tabs {
