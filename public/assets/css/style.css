@@ -2,6 +2,11 @@
     box-sizing: border-box;
 }
 
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
 ._pb_circle_button {
     display: inline-block;
     width: 24px;
@@ -44,6 +49,7 @@
     padding: 3px;
     border-radius: 2px;
     cursor: default;
+    transition: background-color .2s;
 }
 ._pb_toolbar ._pb_button .material-icons {
     font-size: 18px;
@@ -80,17 +86,17 @@
     border-left: 8px solid transparent;
 }
 ._pb_panel > ._pb_header {
-    padding: 6px 12px;
+    padding: 16px;
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
     background-color: #424242;
     color: white;
 }
 ._pb_panel > ._pb_header > ._pb_tabs {
-    margin: -6px -12px;
+    margin: -16px;
 }
 ._pb_panel > ._pb_content {
-    padding: 12px;
+    padding: 16px;
 }
 
 ._pb_panel._pb_blue:after {
@@ -110,8 +116,38 @@
     border: 2px solid #424242;
     border-radius: 2px;
 }
+._pb_bounding_box ._pb_circle_button {
+    position: absolute;
+}
+._pb_bounding_box ._pb_insert_before {
+    top: -13px;
+    left: 50%;
+    margin-left: -12px;
+}
+._pb_bounding_box ._pb_insert_after {
+    bottom: -13px;
+    left: 50%;
+    margin-left: -12px;
+}
+._pb_bounding_box ._pb_move_left {
+    left: -13px;
+    top: 50%;
+    margin-top: -12px;
+}
+._pb_bounding_box ._pb_move_right {
+    right: -13px;
+    top: 50%;
+    margin-top: -12px;
+}
+._pb_bounding_box ._pb_delete {
+    top: -13px;
+    right: -13px;
+}
 ._pb_bounding_box._pb_purple {
     border-color: #8E24AA;
+}
+._pb_bounding_box._pb_purple ._pb_circle_button {
+    background-color: #8E24AA;
 }
 
 ._pb_tabs {
@@ -121,10 +157,16 @@
     display: block;
     text-decoration: none;
     color: inherit;
-    padding: 10px 12px 6px 12px;
+    font-size: 14px;
+    line-height: 1;
+    text-transform: uppercase;
+    font-weight: 600;
+    padding: 16px 16px 14px 16px;
     border-bottom: 2px solid transparent;
     cursor: default;
     opacity: 0.8;
+
+    transition: border-bottom-color .2s, opacity .2s;
 }
 ._pb_tabs ._pb_tab:hover {
     border-bottom-color: currentColor;
