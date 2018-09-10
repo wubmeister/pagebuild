@@ -122,22 +122,42 @@ body {
 ._pb_bounding_box ._pb_insert_before {
     top: -13px;
     left: 50%;
-    margin-left: -12px;
+    margin-left: 5px;
 }
 ._pb_bounding_box ._pb_insert_after {
     bottom: -13px;
     left: 50%;
-    margin-left: -12px;
+    margin-left: 5px;
+}
+._pb_bounding_box ._pb_move_up {
+    top: -13px;
+    left: 50%;
+    margin-left: -29px;
+}
+._pb_bounding_box ._pb_move_down {
+    bottom: -13px;
+    left: 50%;
+    margin-left: -29px;
 }
 ._pb_bounding_box ._pb_move_left {
     left: -13px;
     top: 50%;
-    margin-top: -12px;
+    margin-top: -29px;
 }
 ._pb_bounding_box ._pb_move_right {
     right: -13px;
     top: 50%;
-    margin-top: -12px;
+    margin-top: -29px;
+}
+._pb_bounding_box ._pb_insert_above {
+    left: -13px;
+    top: 50%;
+    margin-top: 5px;
+}
+._pb_bounding_box ._pb_insert_below {
+    right: -13px;
+    top: 50%;
+    margin-top: 5px;
 }
 ._pb_bounding_box ._pb_delete {
     top: -13px;
