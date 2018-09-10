@@ -23,6 +23,17 @@ body {
     background-color: #43A047;
 }
 
+._pb_close_button {
+    display: block;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    cursor: default;
+    color: inherit;
+}
+._pb_close_button .material-icons {
+    font-size: 18px;
+}
 
 ._pb_toolbar {
     position: absolute;
@@ -86,17 +97,16 @@ body {
     border-left: 8px solid transparent;
 }
 ._pb_panel > ._pb_header {
-    padding: 16px;
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
+}
+._pb_header {
+    padding: 16px;
     background-color: #424242;
     color: white;
 }
-._pb_panel > ._pb_header > ._pb_tabs {
+._pb_header > ._pb_tabs {
     margin: -16px;
-}
-._pb_panel > ._pb_content {
-    padding: 16px;
 }
 
 ._pb_panel._pb_blue:after {
@@ -119,45 +129,45 @@ body {
 ._pb_bounding_box ._pb_circle_button {
     position: absolute;
 }
-._pb_bounding_box ._pb_insert_before {
+._pb_bounding_box ._pb_insert_above {
     top: -13px;
     left: 50%;
-    margin-left: 5px;
+    margin-left: 2px;
 }
-._pb_bounding_box ._pb_insert_after {
+._pb_bounding_box ._pb_insert_below {
     bottom: -13px;
     left: 50%;
-    margin-left: 5px;
+    margin-left: 2px;
 }
 ._pb_bounding_box ._pb_move_up {
     top: -13px;
     left: 50%;
-    margin-left: -29px;
+    margin-left: -26px;
 }
 ._pb_bounding_box ._pb_move_down {
     bottom: -13px;
     left: 50%;
-    margin-left: -29px;
+    margin-left: -26px;
 }
 ._pb_bounding_box ._pb_move_left {
     left: -13px;
     top: 50%;
-    margin-top: -29px;
+    margin-top: -26px;
 }
 ._pb_bounding_box ._pb_move_right {
     right: -13px;
     top: 50%;
-    margin-top: -29px;
+    margin-top: -26px;
 }
-._pb_bounding_box ._pb_insert_above {
+._pb_bounding_box ._pb_insert_before {
     left: -13px;
     top: 50%;
-    margin-top: 5px;
+    margin-top: 2px;
 }
-._pb_bounding_box ._pb_insert_below {
+._pb_bounding_box ._pb_insert_after {
     right: -13px;
     top: 50%;
-    margin-top: 5px;
+    margin-top: 2px;
 }
 ._pb_bounding_box ._pb_delete {
     top: -13px;
@@ -225,6 +235,7 @@ body {
     border: none;
     border-radius: 0;
     padding: 0;
+    margin: 0;
     text-align: right;
     outline: 0;
 }
@@ -271,4 +282,12 @@ body {
 }
 ._pb_switch :checked + label:after {
     left: 14px;
+}
+
+._pb_sidebar {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: 280px;
+    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
+    font: 16px sans-serif;
 }
