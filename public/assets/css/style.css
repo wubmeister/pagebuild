@@ -284,6 +284,32 @@ body {
     left: 14px;
 }
 
+._pb_select {
+    height: 16px;
+    line-height: 1;
+    position: relative;
+    padding-right: 24px;
+    min-width: 50px;
+}
+._pb_select:after {
+    content: "\e313";
+    display: block;
+    position: absolute;
+    top: -1px; right: 0;
+    font-size: 18px;
+    font-family: "Material Icons";
+}
+._pb_select ._pb_label {
+    color: #888;
+}
+._pb_select select {
+    position: absolute;
+    top: 0; right: 0; left: 0; bottom: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+}
+
 ._pb_sidebar {
     position: fixed;
     top: 0; right: 0; bottom: 0;

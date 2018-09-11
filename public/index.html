@@ -66,6 +66,18 @@
                     <label for="checkbox-3"></label>
                 </div>
             </div>
+            <div class="_pb_field">
+                <label for="select-4">Select field</label>
+                <div class="_pb_select">
+                    <span class="_pb_label"></span>
+                    <select id="select-4">
+                        <option value="">Select an item</option>
+                        <option value="1">One</option>
+                        <option value="2">Two</option>
+                        <option value="3">Three</option>
+                    </select>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -128,6 +140,11 @@
             </div>
         </div>
     </div>
+
+<script src="assets/js/scripts.js"></script>
+<script>
+    new CustomSelect(document.querySelector('._pb_select'));
+</script>
 
 </body>
 </html>
