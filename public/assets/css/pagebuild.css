@@ -197,7 +197,7 @@ body {
 }
 ._pb_bounding_box ._pb_delete {
     top: -13px;
-    right: -13px;
+    right: 10px;
 }
 ._pb_bounding_box._pb_purple {
     border-color: #8E24AA;
@@ -342,4 +342,23 @@ body {
     width: 280px;
     box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
     font: 16px sans-serif;
+}
+
+._pb_fa_button {
+    display: block;
+    position: fixed;
+    z-index: 1000;
+    right: 24px;
+    bottom: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: #ebebeb;
+    text-align: center;
+    padding: 16px 0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.24);
+}
+._pb_fa_button._pb_green {
+    background-color: #43A047;
+    color: white;
 }
