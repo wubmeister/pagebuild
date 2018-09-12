@@ -141,6 +141,12 @@ body {
 ._pb_panel._pb_blue > ._pb_header {
     background-color: #1E88E5;
 }
+._pb_panel._pb_green:after {
+    border-bottom-color: #43A047;
+}
+._pb_panel._pb_green > ._pb_header {
+    background-color: #43A047;
+}
 
 ._pb_box {
     position: relative;
@@ -361,4 +367,14 @@ body {
 ._pb_fa_button._pb_green {
     background-color: #43A047;
     color: white;
+}
+
+._pb_grid {
+    display: flex;
+    flex-wrap: wrap;
+}
+._pb_grid > ._pb_item {
+    width: 50%;
+    padding: 16px;
+    text-align: center;
 }
