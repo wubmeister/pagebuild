@@ -20,7 +20,7 @@ body {
     font-size: 18px;
 }
 ._pb_circle_button._pb_green {
-    background-color: #43A047;
+    background-color: #2ECC71;
 }
 
 ._pb_close_button {
@@ -136,16 +136,16 @@ body {
 }
 
 ._pb_panel._pb_blue:after {
-    border-bottom-color: #1E88E5;
+    border-bottom-color: #3498DB;
 }
 ._pb_panel._pb_blue > ._pb_header {
-    background-color: #1E88E5;
+    background-color: #3498DB;
 }
 ._pb_panel._pb_green:after {
-    border-bottom-color: #43A047;
+    border-bottom-color: #2ECC71;
 }
 ._pb_panel._pb_green > ._pb_header {
-    background-color: #43A047;
+    background-color: #2ECC71;
 }
 
 ._pb_box {
@@ -206,10 +206,10 @@ body {
     right: 10px;
 }
 ._pb_bounding_box._pb_purple {
-    border-color: #8E24AA;
+    border-color: #745EC5;
 }
 ._pb_bounding_box._pb_purple ._pb_circle_button {
-    background-color: #8E24AA;
+    background-color: #745EC5;
 }
 
 ._pb_tabs {
@@ -310,7 +310,7 @@ body {
     transition: left .3s;
 }
 ._pb_switch :checked + label:before {
-    background-color: #8E24AA;
+    background-color: #745EC5;
 }
 ._pb_switch :checked + label:after {
     left: 14px;
@@ -365,7 +365,7 @@ body {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.24);
 }
 ._pb_fa_button._pb_green {
-    background-color: #43A047;
+    background-color: #2ECC71;
     color: white;
 }
 
