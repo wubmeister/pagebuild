@@ -54,6 +54,12 @@ var Template = {
 };
 
 var Interface = {
+    TOP: 1,
+    RIGHT: 2,
+    BOTTOM: 4,
+    LEFT: 8,
+    CENTER: 16,
+    MIDDLE: 32,
     getDimensions: function(box) {
         var dim = { top: 0; left: 0; width: box.offsetWidth, height: box.offsetHeight };
 
@@ -64,6 +70,36 @@ var Interface = {
         }
 
         return dim;
+    },
+    placeElement: function(element, reference, placement, offset) {
+        var width = element.offsetWidth;
+        var height = element.offsetHeight;
+
+        offset = offset || 10;
+
+        switch (placement) {
+            case 'n':
+                element.style.left = (dim.left + (dim.width - width) / 2) + 'px';
+                element.style.top = (dim.top - height - offset) + 'px';
+                break;
+            case 'nne':
+                element.style.left = dim.left + 'px';
+                element.style.top = (dim.top - height - offset) + 'px';
+                break;
+            case 'ne':
+                element.style.left = (dim.left + dim.width + offset) + 'px';
+                element.style.top = (dim.top - height - offset) + 'px';
+                break;
+            case 'ene':
+                element.style.left = (dim.left + dim.width + offset) + 'px';
+                element.style.top = dim.top + 'px';
+                break;
+            case 'e':
+                element.style.left = (dim.left + dim.width + offset) + 'px';
+                element.style.top = (dim.top + (dim.height - height) / 2) + 'px';
+                break;
+            //...
+        }
     },
     markElementSuccess: function(pbBox) {
         var dim = this.getDimensions(pbBox);
@@ -94,6 +130,20 @@ var Interface = {
         this.errorBox.style.width = dim.width + 'px';
         this.errorBox.style.height = dim.height + 'px';
         this.errorBox.classList.add('_pb_visible');
+    },
+    showAddBox: function(activator, components) {
+        var content = this.addBox.querySelector('._pb_content');
+
+        var html = '<div class="_pb_grid">';
+        for (let i = 0; i < components.length; i++) {
+            html += '<div class="_pb_item"><a class="_pb_component_select" data-component="' + components[i].name + '"><img src="' + components[i].thumbnail + '" /></a></div>';
+        }
+        html += '</div>';
+        content.html = html;
+
+        var dim = getDimensions(activator);
+        this.placeElement(this.addBox, dim, 's');
+        this.addBox.classList.add('_pb_visible');
     }
 };
 
@@ -199,6 +249,27 @@ class Component {
         }
 
         return settings;
+    }
+
+    getAllowedChildren() {
+        var children = [];
+
+        if (this.allowChildren.length > 0) {
+            for (let i = 0; i < this.allowChildren.length; i++) {
+                children.push(Component.get(this.allowChildren[i]));
+            }
+        } else {
+            for (let key in Component.instances) {
+                let instance = Component.instances[key];
+                if (instance != this) {
+                    if (instance.allowParents.length || instance.allowParents.indexOf(this.name) > -1) {
+                        children.push(instance);
+                    }
+                }
+            }
+        }
+
+        return children;
     }
 }
 Component.get = function(name) {
