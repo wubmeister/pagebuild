@@ -15,6 +15,7 @@ body {
     border-radius: 50%;
     background-color: #424242;
     color: white;
+    cursor: pointer;
 }
 ._pb_circle_button .material-icons {
     font-size: 18px;
@@ -108,8 +109,18 @@ body {
     background-color: white;
     color: #424242;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
-    font: 16px sans-serif;
+    font: 16px "Roboto", sans-serif;
+    opacity: 0;
+    transform: translateY(10px);
+    z-index: -1;
+    pointer-events: none;
+}
+._pb_panel._pb_visible {
+    opacity: 1;
+    transform: none;
     z-index: 1000;
+    pointer-events: auto;
+    transition: opacity .3s, transform .3s;
 }
 ._pb_panel:after {
     content: "";
@@ -130,6 +141,7 @@ body {
     padding: 16px;
     background-color: #424242;
     color: white;
+    font-weight: bold;
 }
 ._pb_header > ._pb_tabs {
     margin: -16px;
@@ -262,7 +274,7 @@ body {
 ._pb_field input[type="password"],
 ._pb_field input[type="url"] {
     -webkit-appearance: none;
-    font: 16px sans-serif;
+    font: 16px "Roboto", sans-serif;
     line-height: 1;
     border: none;
     border-radius: 0;
@@ -347,7 +359,7 @@ body {
     top: 0; right: 0; bottom: 0;
     width: 280px;
     box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
-    font: 16px sans-serif;
+    font: 16px "Roboto", sans-serif;
 }
 
 ._pb_fa_button {

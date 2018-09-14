@@ -61,7 +61,7 @@ var Interface = {
     CENTER: 16,
     MIDDLE: 32,
     getDimensions: function(box) {
-        var dim = { top: 0; left: 0; width: box.offsetWidth, height: box.offsetHeight };
+        var dim = { top: 0, left: 0, width: box.offsetWidth, height: box.offsetHeight };
 
         while (box) {
             dim.top += box.offsetTop;
@@ -79,26 +79,42 @@ var Interface = {
 
         switch (placement) {
             case 'n':
-                element.style.left = (dim.left + (dim.width - width) / 2) + 'px';
-                element.style.top = (dim.top - height - offset) + 'px';
+                element.style.left = (reference.left + (reference.width - width) / 2) + 'px';
+                element.style.top = (reference.top - height - offset) + 'px';
                 break;
             case 'nne':
-                element.style.left = dim.left + 'px';
-                element.style.top = (dim.top - height - offset) + 'px';
+                element.style.left = reference.left + 'px';
+                element.style.top = (reference.top - height - offset) + 'px';
                 break;
             case 'ne':
-                element.style.left = (dim.left + dim.width + offset) + 'px';
-                element.style.top = (dim.top - height - offset) + 'px';
+                element.style.left = (reference.left + reference.width + offset) + 'px';
+                element.style.top = (reference.top - height - offset) + 'px';
                 break;
             case 'ene':
-                element.style.left = (dim.left + dim.width + offset) + 'px';
-                element.style.top = dim.top + 'px';
+                element.style.left = (reference.left + reference.width + offset) + 'px';
+                element.style.top = reference.top + 'px';
                 break;
             case 'e':
-                element.style.left = (dim.left + dim.width + offset) + 'px';
-                element.style.top = (dim.top + (dim.height - height) / 2) + 'px';
+                element.style.left = (reference.left + reference.width + offset) + 'px';
+                element.style.top = (reference.top + (reference.height - height) / 2) + 'px';
                 break;
-            //...
+            case 'ese':
+                element.style.left = (reference.left + reference.width + offset) + 'px';
+                element.style.top = (reference.top + reference.height - height) + 'px';
+                break;
+            case 'se':
+                element.style.left = (reference.left + reference.width + offset) + 'px';
+                element.style.top = (reference.top + reference.height + offset) + 'px';
+                break;
+            case 'sse':
+                element.style.left = reference.left + 'px';
+                element.style.top = (reference.top + reference.height + offset) + 'px';
+                break;
+            case 's':
+                element.style.left = (reference.left + (reference.width - width) / 2) + 'px';
+                element.style.top = (reference.top + reference.height + offset) + 'px';
+                break;
+
         }
     },
     markElementSuccess: function(pbBox) {
@@ -136,14 +152,21 @@ var Interface = {
 
         var html = '<div class="_pb_grid">';
         for (let i = 0; i < components.length; i++) {
-            html += '<div class="_pb_item"><a class="_pb_component_select" data-component="' + components[i].name + '"><img src="' + components[i].thumbnail + '" /></a></div>';
+            html += '<div class="_pb_item"><a class="_pb_component_select" data-component="' + components[i].name + '"><img src="' + components[i].thumb + '" /></a></div>';
         }
         html += '</div>';
-        content.html = html;
+        content.innerHTML = html;
 
-        var dim = getDimensions(activator);
+        var dim = this.getDimensions(activator);
         this.placeElement(this.addBox, dim, 's');
         this.addBox.classList.add('_pb_visible');
+    },
+    init: function() {
+        this.addBox = document.createElement('div');
+        this.addBox.className = '_pb_panel _pb_blue';
+        this.addBox.innerHTML = '<div class="_pb_header">Add component</div><div class="_pb_content"></div>';
+        this.addBox.style.width = '280px';
+        document.body.appendChild(this.addBox);
     }
 };
 
@@ -185,7 +208,7 @@ class WorkingTreeNode {
     pushChanges(apiPath) {
         var url = apiPath,
             self = this,
-            method: 'post';
+            method = 'post';
 
         if (this.id) {
             url += '/' + this.id;
@@ -199,7 +222,7 @@ class WorkingTreeNode {
             url: url,
             success: function(result) {
                 self.id = result.id;
-                if (method == 'delete' && result.id = self.id) {
+                if (method == 'delete' && result.id == self.id) {
                     self.purge();
                 } else {
                     Interface.markElementSuccess(this.element);
@@ -214,6 +237,16 @@ class WorkingTreeNode {
 }
 
 class Component {
+    constructor(name, specs) {
+        this.name = name;
+        this.label = specs.label || name;
+        this.thumb = specs.thumb || '';
+        this.html = specs.html;
+        this.allowChildren = specs.allowChildren || [];
+        this.allowParents = specs.allowParents || [];
+        this.settings = specs.settings || {};
+    }
+
     updateElement(element, settings, contentElement) {
         var tempDiv = document.createElement('div');
 
@@ -272,6 +305,20 @@ class Component {
         return children;
     }
 }
+Component.instances = [];
 Component.get = function(name) {
     return Component.instances[name]||null;
 };
+Component.load = function(components) {
+    for (let key in components) {
+        this.instances[key] = new Component(key, components[key]);
+    }
+};
+Component.all = function() {
+    var all = [];
+    for (let key in this.instances) {
+        all.push(this.instances[key]);
+    }
+
+    return all;
+}

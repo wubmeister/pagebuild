@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Pagebuild</title>
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons|Roboto:400,500,700" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="lib/pagebuild/css/pagebuild.css" />
+
+    <style>
+    body {
+        margin: 20px;
+    }
+    </style>
+</head>
+<body>
+
+    <p style="text-align:center;"><a class="_pb_circle_button _pb_add_button"><i class="material-icons">add</i></a></p>
+
+<script src="lib/pagebuild/js/pagebuild.js"></script>
+<script src="lib/pagebuild/js/classes.js"></script>
+<script>
+    Interface.init();
+    Component.load({
+        "section": {
+            "label": "Section",
+            "thumb": "assets/thumbs/basic/section.svg",
+            "html": "<section class=\"basic {{color}} {{align}} section\"><div class=\"basic container\">{{content}}</div></section>",
+            "settings": [
+                {
+                    "name": "color",
+                    "label": "Color",
+                    "type": "color",
+                    "allowNone": "true"
+                },
+                {
+                    "name": "align",
+                    "label": "Text alignment",
+                    "type": "select",
+                    "options": {
+                        "left": "Left",
+                        "center": "Center",
+                        "right": "Right"
+                    }
+                }
+            ]
+        }
+    });
+
+    document.querySelector('._pb_add_button').addEventListener('click', function(e) {
+        e.preventDefault();
+        Interface.showAddBox(this, Component.all());
+    });
+</script>
+
+</body>
+</html>

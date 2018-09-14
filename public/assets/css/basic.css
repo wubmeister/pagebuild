@@ -37,7 +37,7 @@ body, button, input, select, textarea {
     text-align: center;
 }
 .basic.section.primary {
-    background-color: #09f;
+    background-color: #3498DB;
     color: white;
 }
 
@@ -76,6 +76,15 @@ body, button, input, select, textarea {
     height: 1px;
     margin: 1em 0;
 }
-.basic.divider.red {
-    background-color: red;
+.basic.divider.success {
+    background-color: #2ECC71;
+}
+.basic.divider.warning {
+    background-color: #FFCD02;
+}
+.basic.divider.error {
+    background-color: #E74C3C;
+}
+.basic.divider.info {
+    background-color: #3498DB;
 }
