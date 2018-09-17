@@ -43,7 +43,7 @@ var Template = {
             key;
 
         for (let i = 0; i < matches.length; i++) {
-            key = matches[i].substr(2, matches[i].length-1);
+            key = matches[i].substr(2, matches[i].length-4);
             if (key in variables) {
                 html = html.replace(matches[i], variables[key]);
             }
@@ -60,6 +60,7 @@ var Interface = {
     LEFT: 8,
     CENTER: 16,
     MIDDLE: 32,
+    currActivator: null,
     getDimensions: function(box) {
         var dim = { top: 0, left: 0, width: box.offsetWidth, height: box.offsetHeight };
 
@@ -160,12 +161,40 @@ var Interface = {
         var dim = this.getDimensions(activator);
         this.placeElement(this.addBox, dim, 's');
         this.addBox.classList.add('_pb_visible');
+        this.currActivator = activator;
+    },
+    hideAddBox: function() {
+        this.addBox.classList.remove('_pb_visible');
+        this.currActivator = null;
+    },
+    placeComponent: function (component) {
+        var node = new WorkingTreeNode(component);
+        this.currActivator.parentElement.insertBefore(node.element, this.currActivator);
     },
     init: function() {
         this.addBox = document.createElement('div');
         this.addBox.className = '_pb_panel _pb_blue';
         this.addBox.innerHTML = '<div class="_pb_header">Add component</div><div class="_pb_content"></div>';
         this.addBox.style.width = '280px';
+        this.addBox.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+
+            var el = e.target;
+            while (el && !el.classList.contains('_pb_component_select')) {
+                el = el.parentElement;
+            }
+
+            if (el) {
+                var componentName = el.getAttribute('data-component');
+                var component = Component.get(componentName);
+
+                if (component) {
+                    Interface.placeComponent(component);
+                    Interface.hideAddBox();
+                }
+            }
+        });
         document.body.appendChild(this.addBox);
     }
 };
@@ -201,7 +230,8 @@ class WorkingTreeNode {
     }
 
     render() {
-        result = this.component.updateElement(this.element, this.settings, this.contentElement);
+        var result = this.component.updateElement(this.element, this.settings, this.contentElement);
+        this.element = result.element;
         this.contentElement = result.contentElement;
     }
 
@@ -252,13 +282,15 @@ class Component {
 
         tempDiv.innerHTML = Template.interpolate(this.html, settings)
             .replace('{{content_class}}', '._pb_content')
-            .replace('{{content}}', '<div class="_pb_content"></div>');
+            .replace('{{content}}', '<div class="_pb_content">Hi, I am content!</div>');
 
         if (!tempDiv.firstElementChild) {
             console.error('Could not render component');
         } else {
             tempDiv.firstElementChild.classList.add('_pb_box');
-            element.parent.replaceChild(tempDiv.firstElementChild, element);
+            if (element.parentElement) {
+                element.parentElement.replaceChild(tempDiv.firstElementChild, element);
+            }
             element = tempDiv.firstElementChild;
             if (contentElement) {
                 var oldContent = element.querySelector('._pb_content');
@@ -270,15 +302,16 @@ class Component {
         }
 
         return {
-            contentElement: contentElement
+            contentElement: contentElement,
+            element: element
         };
     }
 
     getDefaultSettings() {
         var settings = {};
 
-        for (let key in this.settings) {
-            settings[key] = this.settings[key].defaultValue || null;
+        for (let i = 0; i < this.settings.length; i++) {
+            settings[this.settings[i].name] = ('defaultValue' in this.settings[i]) ? this.settings[i].defaultValue : null;
         }
 
         return settings;
