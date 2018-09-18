@@ -170,6 +170,7 @@ var Interface = {
     placeComponent: function (component) {
         var node = new WorkingTreeNode(component);
         this.currActivator.parentElement.insertBefore(node.element, this.currActivator);
+        this.currActivator.parentElement.removeChild(this.currActivator);
     },
     init: function() {
         this.addBox = document.createElement('div');
@@ -280,9 +281,10 @@ class Component {
     updateElement(element, settings, contentElement) {
         var tempDiv = document.createElement('div');
 
-        tempDiv.innerHTML = Template.interpolate(this.html, settings)
-            .replace('{{content_class}}', '._pb_content')
-            .replace('{{content}}', '<div class="_pb_content">Hi, I am content!</div>');
+        var html = Template.interpolate(this.html, settings)
+            .replace('{{content_class}}', '_pb_content')
+            .replace('{{content}}', '<div class="_pb_content"></div>');
+        tempDiv.innerHTML = html;
 
         if (!tempDiv.firstElementChild) {
             console.error('Could not render component');
@@ -294,10 +296,18 @@ class Component {
             element = tempDiv.firstElementChild;
             if (contentElement) {
                 var oldContent = element.querySelector('._pb_content');
-                contentElement.className = oldContent.className;
-                oldContent.parentElement.replaceChild(contentElement, oldContent);
+                if (!oldContent && element.classList.contains('_pb_content')) oldContent = element;
+                if (contentElement) {
+                    contentElement.className = oldContent.className;
+                    oldContent.parentElement.replaceChild(contentElement, oldContent);
+                }
             } else {
                 contentElement = element.querySelector('._pb_content');
+                if (!contentElement && element.classList.contains('_pb_content')) contentElement = element;
+
+                if (contentElement) {
+                    contentElement.innerHTML = '<a class="_pb_circle_button _pb_add_button"><i class="material-icons">add</i></a>';
+                }
             }
         }
 
