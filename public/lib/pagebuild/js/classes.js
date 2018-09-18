@@ -75,48 +75,55 @@ var Interface = {
     placeElement: function(element, reference, placement, offset) {
         var width = element.offsetWidth;
         var height = element.offsetHeight;
+        var vpWidth = document.body.clientWidth;
+        var left, top;
 
         offset = offset || 10;
 
         switch (placement) {
             case 'n':
-                element.style.left = (reference.left + (reference.width - width) / 2) + 'px';
-                element.style.top = (reference.top - height - offset) + 'px';
+                left = reference.left + (reference.width - width) / 2;
+                top = reference.top - height - offset;
                 break;
             case 'nne':
-                element.style.left = reference.left + 'px';
-                element.style.top = (reference.top - height - offset) + 'px';
+                left = reference.left;
+                top = reference.top - height - offset;
                 break;
             case 'ne':
-                element.style.left = (reference.left + reference.width + offset) + 'px';
-                element.style.top = (reference.top - height - offset) + 'px';
+                left = reference.left + reference.width + offset;
+                top = reference.top - height - offset;
                 break;
             case 'ene':
-                element.style.left = (reference.left + reference.width + offset) + 'px';
-                element.style.top = reference.top + 'px';
+                left = reference.left + reference.width + offset;
+                top = reference.top;
                 break;
             case 'e':
-                element.style.left = (reference.left + reference.width + offset) + 'px';
-                element.style.top = (reference.top + (reference.height - height) / 2) + 'px';
+                left = reference.left + reference.width + offset;
+                top = reference.top + (reference.height - height) / 2;
                 break;
             case 'ese':
-                element.style.left = (reference.left + reference.width + offset) + 'px';
-                element.style.top = (reference.top + reference.height - height) + 'px';
+                left = reference.left + reference.width + offset;
+                top = reference.top + reference.height - height;
                 break;
             case 'se':
-                element.style.left = (reference.left + reference.width + offset) + 'px';
-                element.style.top = (reference.top + reference.height + offset) + 'px';
+                left = reference.left + reference.width + offset;
+                top = reference.top + reference.height + offset;
                 break;
             case 'sse':
-                element.style.left = reference.left + 'px';
-                element.style.top = (reference.top + reference.height + offset) + 'px';
+                left = reference.left;
+                top = reference.top + reference.height + offset;
                 break;
             case 's':
-                element.style.left = (reference.left + (reference.width - width) / 2) + 'px';
-                element.style.top = (reference.top + reference.height + offset) + 'px';
+                left = reference.left + (reference.width - width) / 2;
+                top = reference.top + reference.height + offset;
                 break;
-
         }
+
+        left = Math.max(0, Math.min(vpWidth - width, left));
+        top = Math.max(0, top);
+
+        element.style.left = left + 'px';
+        element.style.top = top + 'px';
     },
     markElementSuccess: function(pbBox) {
         var dim = this.getDimensions(pbBox);
@@ -167,6 +174,14 @@ var Interface = {
         this.addBox.classList.remove('_pb_visible');
         this.currActivator = null;
     },
+    selectNode: function(nodeElement) {
+        var dim = this.getDimensions(nodeElement);
+        this.boundingBox.style.left = dim.left + 'px';
+        this.boundingBox.style.top = dim.top + 'px';
+        this.boundingBox.style.width = dim.width + 'px';
+        this.boundingBox.style.height = dim.height + 'px';
+        this.boundingBox.classList.add('_pb_visible');
+    },
     placeComponent: function (component) {
         var node = new WorkingTreeNode(component);
         this.currActivator.parentElement.insertBefore(node.element, this.currActivator);
@@ -197,6 +212,15 @@ var Interface = {
             }
         });
         document.body.appendChild(this.addBox);
+
+        this.boundingBox = document.createElement('div');
+        this.boundingBox.className = '_pb_bounding_box';
+        this.boundingBox.innerHTML = '<a class="_pb_circle_button _pb_insert_before"><i class="material-icons">add</i></a>' +
+            '<a class="_pb_circle_button _pb_insert_after"><i class="material-icons">add</i></a>' +
+            '<a class="_pb_circle_button _pb_move_left"><i class="material-icons">keyboard_arrow_left</i></a>' +
+            '<a class="_pb_circle_button _pb_move_right"><i class="material-icons">keyboard_arrow_right</i></a>' +
+            '<a class="_pb_circle_button _pb_delete"><i class="material-icons">delete</i></a>';
+        document.body.appendChild(this.boundingBox);
     }
 };
 

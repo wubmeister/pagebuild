@@ -106,6 +106,7 @@
             e.preventDefault();
             if (el.classList.contains('_pb_box')) {
                 // el.style.border = '2px solid red';
+                Interface.selectNode(el);
             } else {
                 Interface.showAddBox(el, Component.all());
             }
