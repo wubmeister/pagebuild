@@ -70,6 +70,10 @@ body, button, input, select, textarea {
     width: 75%;
 }
 
+.basic.columns._pb_content, .basic.columns .column._pb_content {
+    background-color: rgba(0, 0, 0, 0.25);
+}
+
 
 /* DIVIDER */
 
