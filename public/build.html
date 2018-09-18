@@ -77,7 +77,7 @@
         "heading": {
             "label": "Heading",
             "thumb": "assets/thumbs/basic/heading.svg",
-            "html": "<{{type}} class=\"basic heading\">Heading</{{type}}>",
+            "html": "<{{type}} class=\"basic heading\" contenteditable=\"true\">Heading</{{type}}>",
             "settings": [
                 {
                     "name": "type",
@@ -105,7 +105,7 @@
         if (el) {
             e.preventDefault();
             if (el.classList.contains('_pb_box')) {
-                el.style.border = '2px solid red';
+                // el.style.border = '2px solid red';
             } else {
                 Interface.showAddBox(el, Component.all());
             }
