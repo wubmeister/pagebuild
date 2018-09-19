@@ -159,6 +159,8 @@ var Interface = {
         this.errorBox.classList.add('_pb_visible');
     },
     showAddBox: function(activator, components) {
+        this.hideSettingsBox();
+
         var content = this.addBox.querySelector('._pb_content');
 
         var html = '<div class="_pb_grid">';
@@ -193,10 +195,35 @@ var Interface = {
         this.updateBoundingBox(nodeElement);
         this.boundingBox.classList.add('_pb_visible');
         this.selectedNode = nodeElement.wtNode;
+
+        setTimeout(function(){
+            Interface.showSettingsBox(Interface.selectedNode);
+        }, 100);
     },
     unselectNode: function() {
         this.selectedNode = null;
         this.boundingBox.classList.remove('_pb_visible');
+        this.hideSettingsBox();
+    },
+    showSettingsBox: function(node) {
+        if (node.component.settings.length == 0) {
+            return;
+        }
+
+        var settingsContent = this.settingsBox.querySelector('._pb_content'),
+            selects;
+
+        settingsContent.innerHTML = this.buildSettingsForm(node.component.settings, node.settings);
+        this.placeElement(this.settingsBox, this.getDimensions(node.element), 's');
+        this.settingsBox.classList.add('_pb_visible');
+
+        selects = settingsContent.querySelectorAll('._pb_select');
+        for (let i = 0; i < selects.length; i++) {
+            CustomSelect(selects[i]);
+        }
+    },
+    hideSettingsBox: function() {
+        this.settingsBox.classList.remove('_pb_visible');
     },
     placeComponent: function (component) {
         var node = new WorkingTreeNode(component);
@@ -292,12 +319,57 @@ var Interface = {
         });
         document.body.appendChild(this.boundingBox);
 
+        this.settingsBox = document.createElement('div');
+        this.settingsBox.className = '_pb_panel';
+        this.settingsBox.innerHTML = '<div class="_pb_header">Settings</div><div class="_pb_content"></div>';
+        this.settingsBox.style.width = '280px';
+        document.body.appendChild(this.settingsBox);
+
         window.addEventListener('resize', this.onResize.bind(this));
     },
     onResize: function() {
         if (this.selectedNode) {
             this.updateBoundingBox(this.selectedNode.element)
         }
+    },
+    buildSettingsForm: function(settings, values) {
+        var formHtml = '', value;
+
+        values = values || {};
+
+        for (let i = 0; i < settings.length; i++) {
+            value = (settings[i].name in values) ? values[settings[i].name] : (settings[i].defaultValue||'');
+            formHtml += `<div class="_pb_field">
+                <label for="setting-${settings[i].name}">${settings[i].label}</label>`;
+
+            switch (settings[i].type) {
+                case 'check':
+                    formHtml += `<div class="_pb_switch">
+                            <input type="checkbox" id="setting-${settings[i].name}" />
+                            <label for="setting-${settings[i].name}"></label>
+                        </div>`;
+                    break;
+
+                case 'select':
+                    formHtml += `<div class="_pb_select">
+                        <span class="_pb_label"></span>
+                        <select id="setting-${settings[i].name}">`;
+                    for (let key in settings[i].options) {
+                        formHtml += `<option value="${key}"${key == value ? ' selected' : ''}>${settings[i].options[key]}</option>`;
+                    }
+                    formHtml += `</select>
+                        </div>`;
+                    break;
+
+                default:
+                    formHtml += `<input type="text" placeholder="" id="setting-${settings[i].name}" value="${value}" />`;
+                    break;
+            }
+
+            formHtml += `</div>`;
+        }
+
+        return formHtml;
     }
 };
 
@@ -399,7 +471,7 @@ class Component {
         this.html = specs.html;
         this.allowChildren = specs.allowChildren || [];
         this.allowParents = specs.allowParents || [];
-        this.settings = specs.settings || {};
+        this.settings = specs.settings || [];
         this.allowedChildren = null;
     }
 

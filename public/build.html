@@ -114,7 +114,7 @@
     window.addEventListener('click', function(e) {
         var el = e.target;
 
-        while (el && !el.classList.contains('_pb_add_button') && !el.classList.contains('_pb_box')) el = el.parentElement;
+        while (el && !el.classList.contains('_pb_add_button') && !el.classList.contains('_pb_box') && !el.classList.contains('_pb_panel')) el = el.parentElement;
         if (el) {
             e.preventDefault();
             if (el.classList.contains('_pb_box')) {
