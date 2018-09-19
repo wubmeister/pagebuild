@@ -177,14 +177,22 @@ var Interface = {
         this.addBox.classList.remove('_pb_visible');
         this.currActivator = null;
     },
-    selectNode: function(nodeElement) {
+    updateBoundingBox: function(nodeElement) {
         var dim = this.getDimensions(nodeElement);
         this.boundingBox.style.left = dim.left + 'px';
         this.boundingBox.style.top = dim.top + 'px';
         this.boundingBox.style.width = dim.width + 'px';
         this.boundingBox.style.height = dim.height + 'px';
+    },
+    selectNode: function(nodeElement) {
+        if (!nodeElement.wtNode) {
+            console.error('Not a working tree node element');
+            return;
+        }
+
+        this.updateBoundingBox(nodeElement);
         this.boundingBox.classList.add('_pb_visible');
-        this.selectedNode = nodeElement;
+        this.selectedNode = nodeElement.wtNode;
     },
     unselectNode: function() {
         this.selectedNode = null;
@@ -193,24 +201,30 @@ var Interface = {
     placeComponent: function (component) {
         var node = new WorkingTreeNode(component);
         var placement = this.currActivator.getAttribute('data-placement') || 'replace';
+        var parent, box;
 
         if (placement == 'replace') {
-            this.currActivator.parentElement.insertBefore(node.element, this.currActivator);
-            this.currActivator.parentElement.removeChild(this.currActivator);
+            box = this.currActivator;
+            while (box && !box.classList.contains('_pb_box')) {
+                box = box.parentElement;
+            }
+            if (box && box.wtNode) {
+                box.wtNode.appendChild(node);
+            }
         } else {
             var refComponent = this.selectedNode;
             if (placement == 'before') {
-                refComponent.parentElement.insertBefore(node.element, refComponent);
+                refComponent.parent.insertBefore(node, refComponent);
             } else {
-                refComponent.parentElement.insertBefore(node.element, refComponent.nextSibling);
+                refComponent.parent.insertAfter(node, refComponent);
             }
         }
 
         this.selectNode(node.element);
     },
-    removeNode: function(nodeElement) {
-        var parent = nodeElement.parentElement;
-        parent.removeChild(nodeElement);
+    removeNode: function(node) {
+        var parent = node.element.parentElement;
+        parent.removeChild(node.element);
         if (!parent.firstElementChild) {
             parent.innerHTML = '<a class="_pb_circle_button _pb_add_button"><i class="material-icons">add</i></a>';
         }
@@ -265,7 +279,7 @@ var Interface = {
             if (el) {
                 switch (el.getAttribute('data-action')) {
                     case 'add':
-                        Interface.showAddBox(el, Component.all());
+                        Interface.showAddBox(el, Interface.selectedNode.parent.component.getAllowedChildren());
                         break;
                     case 'delete':
                         if (confirm("Are you sure you want to delete this component?")) {
@@ -282,7 +296,7 @@ var Interface = {
     },
     onResize: function() {
         if (this.selectedNode) {
-            this.selectNode(this.selectedNode)
+            this.updateBoundingBox(this.selectedNode.element)
         }
     }
 };
@@ -313,14 +327,37 @@ class WorkingTreeNode {
     }
 
     appendChild(child) {
+        if (this.children.length == 0) {
+            this.contentElement.innerHTML = '';
+        }
+        child.parent = this;
         this.children.push(child);
         this.contentElement.appendChild(child.element);
+    }
+
+    insertBefore(child, reference) {
+        if (reference.parent != this) {
+            console.error('Reference node is not a direct child');
+            return;
+        }
+        child.parent = this;
+        this.contentElement.insertBefore(child.element, reference.element);
+    }
+
+    insertAfter(child, reference) {
+        if (reference.parent != this) {
+            console.error('Reference node is not a direct child');
+            return;
+        }
+        child.parent = this;
+        this.contentElement.insertBefore(child.element, reference.element.nextSibling);
     }
 
     render() {
         var result = this.component.updateElement(this.element, this.settings, this.contentElement);
         this.element = result.element;
         this.contentElement = result.contentElement;
+        this.element.wtNode = this;
     }
 
     pushChanges(apiPath) {
@@ -363,6 +400,7 @@ class Component {
         this.allowChildren = specs.allowChildren || [];
         this.allowParents = specs.allowParents || [];
         this.settings = specs.settings || {};
+        this.allowedChildren = null;
     }
 
     updateElement(element, settings, contentElement) {
@@ -415,24 +453,26 @@ class Component {
     }
 
     getAllowedChildren() {
-        var children = [];
+        if (!this.allowedChildren) {
+            this.allowedChildren = [];
 
-        if (this.allowChildren.length > 0) {
-            for (let i = 0; i < this.allowChildren.length; i++) {
-                children.push(Component.get(this.allowChildren[i]));
-            }
-        } else {
-            for (let key in Component.instances) {
-                let instance = Component.instances[key];
-                if (instance != this) {
-                    if (instance.allowParents.length || instance.allowParents.indexOf(this.name) > -1) {
-                        children.push(instance);
+            if (this.allowChildren.length > 0) {
+                for (let i = 0; i < this.allowChildren.length; i++) {
+                    this.allowedChildren.push(Component.get(this.allowChildren[i]));
+                }
+            } else {
+                for (let key in Component.instances) {
+                    let instance = Component.instances[key];
+                    if (instance != this) {
+                        if (instance.allowParents.length == 0 || instance.allowParents.indexOf(this.name) > -1) {
+                            this.allowedChildren.push(instance);
+                        }
                     }
                 }
             }
         }
 
-        return children;
+        return this.allowedChildren;
     }
 }
 Component.instances = [];

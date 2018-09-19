@@ -17,13 +17,16 @@
 </head>
 <body>
 
-    <div class="_pb_content"><a class="_pb_circle_button _pb_add_button"><i class="material-icons">add</i></a></div>
-
 <script src="lib/pagebuild/js/pagebuild.js"></script>
 <script src="lib/pagebuild/js/classes.js"></script>
 <script>
     Interface.init();
     Component.load({
+        "page": {
+            "label": "Page",
+            "html": "{{content}}",
+            "allowParents": [ "none" ]
+        },
         "section": {
             "label": "Section",
             "thumb": "assets/thumbs/basic/section.svg",
@@ -47,12 +50,14 @@
                     },
                     "defaultValue": "centered"
                 }
-            ]
+            ],
+            "allowParents": [ "page" ]
         },
         "columns": {
             "label": "Columns",
             "thumb": "assets/thumbs/basic/columns.svg",
-            "html": "<div class=\"basic columns {{content_class}}\"></div>"
+            "html": "<div class=\"basic columns {{content_class}}\"></div>",
+            "allowChildren": [ "column" ]
         },
         "column": {
             "label": "Column",
@@ -72,7 +77,8 @@
                     },
                     "defaultValue": "column-1-2"
                 }
-            ]
+            ],
+            "allowParents": [ "columns" ]
         },
         "heading": {
             "label": "Heading",
@@ -102,7 +108,9 @@
         }
     });
 
-    // document.querySelector('._pb_add_button').addEventListener('click', function(e) {
+    var pageNode = new WorkingTreeNode(Component.get('page'));
+    document.body.insertBefore(pageNode.element, document.body.firstElementChild);
+
     window.addEventListener('click', function(e) {
         var el = e.target;
 
@@ -110,10 +118,16 @@
         if (el) {
             e.preventDefault();
             if (el.classList.contains('_pb_box')) {
-                // el.style.border = '2px solid red';
                 Interface.selectNode(el);
             } else {
-                Interface.showAddBox(el, Component.all());
+                var box = el;
+                while (box && !box.classList.contains('_pb_box')) {
+                    box = box.parentElement;
+                }
+
+                if (box && box.wtNode) {
+                    Interface.showAddBox(el, box.wtNode.component.getAllowedChildren());
+                }
             }
         } else {
             Interface.unselectNode();
