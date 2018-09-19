@@ -236,17 +236,22 @@ var Interface = {
 
         this.boundingBox = document.createElement('div');
         this.boundingBox.className = '_pb_bounding_box';
-        this.boundingBox.innerHTML = '<a class="_pb_circle_button _pb_insert_before" data-action="add" data-placement="before"><i class="material-icons">add</i></a>' +
-            '<a class="_pb_circle_button _pb_insert_after" data-action="add" data-placement="after"><i class="material-icons">add</i></a>' +
-            '<a class="_pb_circle_button _pb_move_left"><i class="material-icons">keyboard_arrow_left</i></a>' +
-            '<a class="_pb_circle_button _pb_move_right"><i class="material-icons">keyboard_arrow_right</i></a>' +
-            '<a class="_pb_circle_button _pb_delete"><i class="material-icons">delete</i></a>';
+        this.boundingBox.innerHTML = `
+            <div class="_pb_button_group _pb_left">
+                <a class="_pb_action_button _pb_insert_before" data-action="add" data-placement="before"><i class="material-icons">add</i></a>
+                <a class="_pb_action_button _pb_move_left"><i class="material-icons">keyboard_arrow_left</i></a>
+            </div>
+            <div class="_pb_button_group _pb_right">
+                <a class="_pb_action_button _pb_insert_after" data-action="add" data-placement="after"><i class="material-icons">add</i></a>
+                <a class="_pb_action_button _pb_move_right"><i class="material-icons">keyboard_arrow_right</i></a>
+            </div>
+            <a class="_pb_action_button _pb_circle_button _pb_delete"><i class="material-icons">delete</i></a>`;
         this.boundingBox.addEventListener('click', function(e){
             e.preventDefault();
             e.stopPropagation();
 
             var el = e.target;
-            while (el && !el.classList.contains('_pb_circle_button')) {
+            while (el && !el.classList.contains('_pb_action_button')) {
                 el = el.parentElement;
             }
 
@@ -259,6 +264,13 @@ var Interface = {
             }
         });
         document.body.appendChild(this.boundingBox);
+
+        window.addEventListener('resize', this.onResize.bind(this));
+    },
+    onResize: function() {
+        if (this.selectedNode) {
+            this.selectNode(this.selectedNode)
+        }
     }
 };
 
