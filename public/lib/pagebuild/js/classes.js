@@ -208,6 +208,13 @@ var Interface = {
 
         this.selectNode(node.element);
     },
+    removeNode: function(nodeElement) {
+        var parent = nodeElement.parentElement;
+        parent.removeChild(nodeElement);
+        if (!parent.firstElementChild) {
+            parent.innerHTML = '<a class="_pb_circle_button _pb_add_button"><i class="material-icons">add</i></a>';
+        }
+    },
     init: function() {
         this.addBox = document.createElement('div');
         this.addBox.className = '_pb_panel _pb_blue';
@@ -245,7 +252,7 @@ var Interface = {
                 <a class="_pb_action_button _pb_insert_after" data-action="add" data-placement="after"><i class="material-icons">add</i></a>
                 <a class="_pb_action_button _pb_move_right"><i class="material-icons">keyboard_arrow_right</i></a>
             </div>
-            <a class="_pb_action_button _pb_circle_button _pb_delete"><i class="material-icons">delete</i></a>`;
+            <a class="_pb_action_button _pb_circle_button _pb_delete" data-action="delete"><i class="material-icons">delete</i></a>`;
         this.boundingBox.addEventListener('click', function(e){
             e.preventDefault();
             e.stopPropagation();
@@ -259,6 +266,12 @@ var Interface = {
                 switch (el.getAttribute('data-action')) {
                     case 'add':
                         Interface.showAddBox(el, Component.all());
+                        break;
+                    case 'delete':
+                        if (confirm("Are you sure you want to delete this component?")) {
+                            Interface.removeNode(Interface.selectedNode);
+                            Interface.unselectNode();
+                        }
                         break;
                 }
             }
