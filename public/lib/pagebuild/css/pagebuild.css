@@ -177,6 +177,9 @@ body {
     opacity: 1;
     z-index: 0;
 }
+._pb_bounding_box._pb_visible ._pb_circle_button {
+    pointer-events: auto;
+}
 ._pb_bounding_box ._pb_circle_button {
     position: absolute;
 }

@@ -94,6 +94,11 @@
                     "defaultValue": "h1"
                 }
             ]
+        },
+        "fulltext": {
+            "label": "Full text",
+            "thumb": "assets/thumbs/basic/fulltext.svg",
+            "html": "<div contenteditable=\"true\"><p>Lorem ipsum doler sit amet</p></div>"
         }
     });
 
@@ -110,6 +115,9 @@
             } else {
                 Interface.showAddBox(el, Component.all());
             }
+        } else {
+            Interface.unselectNode();
+            Interface.hideAddBox();
         }
     });
 </script>

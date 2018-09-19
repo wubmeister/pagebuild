@@ -49,6 +49,7 @@ body, button, input, select, textarea {
     flex-wrap: wrap;
     margin: 0 -10px;
     justify-content: center;
+    text-align: left;
 }
 .basic.columns .column {
     width: 100%;

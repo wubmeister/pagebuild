@@ -42,6 +42,8 @@ var Template = {
             matches = template.match(/\{\{[^\}]+\}\}/g),
             key;
 
+        if (!matches) return html;
+
         for (let i = 0; i < matches.length; i++) {
             key = matches[i].substr(2, matches[i].length-4);
             if (key in variables) {
@@ -61,6 +63,7 @@ var Interface = {
     CENTER: 16,
     MIDDLE: 32,
     currActivator: null,
+    selectedNode: null,
     getDimensions: function(box) {
         var dim = { top: 0, left: 0, width: box.offsetWidth, height: box.offsetHeight };
 
@@ -181,11 +184,29 @@ var Interface = {
         this.boundingBox.style.width = dim.width + 'px';
         this.boundingBox.style.height = dim.height + 'px';
         this.boundingBox.classList.add('_pb_visible');
+        this.selectedNode = nodeElement;
+    },
+    unselectNode: function() {
+        this.selectedNode = null;
+        this.boundingBox.classList.remove('_pb_visible');
     },
     placeComponent: function (component) {
         var node = new WorkingTreeNode(component);
-        this.currActivator.parentElement.insertBefore(node.element, this.currActivator);
-        this.currActivator.parentElement.removeChild(this.currActivator);
+        var placement = this.currActivator.getAttribute('data-placement') || 'replace';
+
+        if (placement == 'replace') {
+            this.currActivator.parentElement.insertBefore(node.element, this.currActivator);
+            this.currActivator.parentElement.removeChild(this.currActivator);
+        } else {
+            var refComponent = this.selectedNode;
+            if (placement == 'before') {
+                refComponent.parentElement.insertBefore(node.element, refComponent);
+            } else {
+                refComponent.parentElement.insertBefore(node.element, refComponent.nextSibling);
+            }
+        }
+
+        this.selectNode(node.element);
     },
     init: function() {
         this.addBox = document.createElement('div');
@@ -215,11 +236,28 @@ var Interface = {
 
         this.boundingBox = document.createElement('div');
         this.boundingBox.className = '_pb_bounding_box';
-        this.boundingBox.innerHTML = '<a class="_pb_circle_button _pb_insert_before"><i class="material-icons">add</i></a>' +
-            '<a class="_pb_circle_button _pb_insert_after"><i class="material-icons">add</i></a>' +
+        this.boundingBox.innerHTML = '<a class="_pb_circle_button _pb_insert_before" data-action="add" data-placement="before"><i class="material-icons">add</i></a>' +
+            '<a class="_pb_circle_button _pb_insert_after" data-action="add" data-placement="after"><i class="material-icons">add</i></a>' +
             '<a class="_pb_circle_button _pb_move_left"><i class="material-icons">keyboard_arrow_left</i></a>' +
             '<a class="_pb_circle_button _pb_move_right"><i class="material-icons">keyboard_arrow_right</i></a>' +
             '<a class="_pb_circle_button _pb_delete"><i class="material-icons">delete</i></a>';
+        this.boundingBox.addEventListener('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+
+            var el = e.target;
+            while (el && !el.classList.contains('_pb_circle_button')) {
+                el = el.parentElement;
+            }
+
+            if (el) {
+                switch (el.getAttribute('data-action')) {
+                    case 'add':
+                        Interface.showAddBox(el, Component.all());
+                        break;
+                }
+            }
+        });
         document.body.appendChild(this.boundingBox);
     }
 };
