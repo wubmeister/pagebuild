@@ -225,6 +225,13 @@ var Interface = {
     hideSettingsBox: function() {
         this.settingsBox.classList.remove('_pb_visible');
     },
+    updateSettingValue: function(name, value) {
+        if (this.selectedNode) {
+            this.selectedNode.settings[name] = value;
+            this.selectedNode.render();
+            Interface.updateBoundingBox(Interface.selectedNode.element);
+        }
+    },
     placeComponent: function (component) {
         var node = new WorkingTreeNode(component);
         var placement = this.currActivator.getAttribute('data-placement') || 'replace';
@@ -323,6 +330,29 @@ var Interface = {
         this.settingsBox.className = '_pb_panel';
         this.settingsBox.innerHTML = '<div class="_pb_header">Settings</div><div class="_pb_content"></div>';
         this.settingsBox.style.width = '280px';
+        this.settingsBox.addEventListener('change', function(e) {
+            var input = e.target,
+                name = input.name,
+                value = null;
+
+            if (input.tagName.toLowerCase() == 'select') {
+                if (input.selectedIndex > -1) {
+                    value = input.options[input.selectedIndex].value;
+                }
+            } else if (input.type == 'checkbox') {
+                value = input.checked;
+            } else if (input.type == 'radio') {
+                if (input.checked) {
+                    value = input.value;
+                }
+            } else {
+                value = input.value;
+            }
+
+            if (value !== null) {
+                Interface.updateSettingValue(name, value);
+            }
+        });
         document.body.appendChild(this.settingsBox);
 
         window.addEventListener('resize', this.onResize.bind(this));
@@ -345,7 +375,7 @@ var Interface = {
             switch (settings[i].type) {
                 case 'check':
                     formHtml += `<div class="_pb_switch">
-                            <input type="checkbox" id="setting-${settings[i].name}" />
+                            <input type="checkbox" id="setting-${settings[i].name}" name="${settings[i].name}"${value ? ' checked' : ''} />
                             <label for="setting-${settings[i].name}"></label>
                         </div>`;
                     break;
@@ -353,7 +383,7 @@ var Interface = {
                 case 'select':
                     formHtml += `<div class="_pb_select">
                         <span class="_pb_label"></span>
-                        <select id="setting-${settings[i].name}">`;
+                        <select id="setting-${settings[i].name}" name="${settings[i].name}">`;
                     for (let key in settings[i].options) {
                         formHtml += `<option value="${key}"${key == value ? ' selected' : ''}>${settings[i].options[key]}</option>`;
                     }
@@ -362,7 +392,7 @@ var Interface = {
                     break;
 
                 default:
-                    formHtml += `<input type="text" placeholder="" id="setting-${settings[i].name}" value="${value}" />`;
+                    formHtml += `<input type="text" placeholder="" id="setting-${settings[i].name}" name="${settings[i].name}" value="${value}" />`;
                     break;
             }
 
@@ -476,7 +506,8 @@ class Component {
     }
 
     updateElement(element, settings, contentElement) {
-        var tempDiv = document.createElement('div');
+        var tempDiv = document.createElement('div'),
+            swapElement;
 
         var html = Template.interpolate(this.html, settings)
             .replace('{{content_class}}', '_pb_content')
@@ -488,13 +519,20 @@ class Component {
         } else {
             tempDiv.firstElementChild.classList.add('_pb_box');
             if (element.parentElement) {
-                element.parentElement.replaceChild(tempDiv.firstElementChild, element);
+                swapElement = tempDiv.firstElementChild;
+                element.parentElement.replaceChild(swapElement, element);
+                element = swapElement;
+            } else {
+                element = tempDiv.firstElementChild;
             }
-            element = tempDiv.firstElementChild;
+
             if (contentElement) {
                 var oldContent = element.querySelector('._pb_content');
                 if (!oldContent && element.classList.contains('_pb_content')) oldContent = element;
-                if (contentElement) {
+                if (oldContent) {
+                    if (oldContent == element) {
+                        element = contentElement;
+                    }
                     contentElement.className = oldContent.className;
                     oldContent.parentElement.replaceChild(contentElement, oldContent);
                 }

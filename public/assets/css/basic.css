@@ -36,6 +36,9 @@ body, button, input, select, textarea {
 .basic.centered.section {
     text-align: center;
 }
+.basic.right.aligned.section {
+    text-align: right;
+}
 .basic.section.blue {
     background-color: #3498DB;
     color: white;
@@ -48,7 +51,6 @@ body, button, input, select, textarea {
     display: flex;
     flex-wrap: wrap;
     margin: 0 -10px;
-    justify-content: center;
     text-align: left;
 }
 .basic.columns .column {
