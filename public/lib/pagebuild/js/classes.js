@@ -428,7 +428,8 @@ class WorkingTreeNode {
         } else {
             this.id = component.id || null;
             this.component = Component.get(component.component);
-            this.settings = component.settings || {};
+            this.settings = component.settings || this.component.getDefaultSettings();
+            this.children = [];
             this.render();
             if ('children' in component) {
                 for (let i = 0; i < component.children.length; i++) {

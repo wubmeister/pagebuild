@@ -108,7 +108,38 @@
         }
     });
 
-    var pageNode = new WorkingTreeNode(Component.get('page'));
+    var treeData = {
+        "component": "page",
+        "children": [
+            {
+                "component": "section",
+                "children": [
+                    {
+                        "component": "columns",
+                        "children": [
+                            {
+                                "component": "column"
+                            },
+                            {
+                                "component": "column",
+                                "settings": {
+                                    "width": "column-1-4"
+                                }
+                            },
+                            {
+                                "component": "column",
+                                "settings": {
+                                    "width": "column-1-4"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    };
+
+    var pageNode = new WorkingTreeNode(treeData);
     document.body.insertBefore(pageNode.element, document.body.firstElementChild);
 
     window.addEventListener('click', function(e) {
