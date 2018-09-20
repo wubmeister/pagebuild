@@ -21,16 +21,7 @@
 </head>
 <body>
 
-    <div class="_pb_toolbar" style="left: 15px; top: 15px;">
-        <a class="_pb_button" data-action="bold"><i class="material-icons">format_bold</i></a>
-        <a class="_pb_button" data-action="italic"><i class="material-icons">format_italic</i></a>
-        <a class="_pb_button" data-action="underline"><i class="material-icons">format_underline</i></a>
-        <span class="_pb_divider"></span>
-        <a class="_pb_button" data-action="align-left"><i class="material-icons">format_align_left</i></a>
-        <a class="_pb_button" data-action="align-center"><i class="material-icons">format_align_center</i></a>
-        <a class="_pb_button" data-action="align-right"><i class="material-icons">format_align_right</i></a>
-        <a class="_pb_button" data-action="align-justify"><i class="material-icons">format_align_justify</i></a>
-    </div>
+    <div class="_pb_toolbar" style="left: 15px; top: 15px;"></div>
 
     <div class="rte" contenteditable="true"></div>
 
@@ -65,35 +56,75 @@
             }
         }
 
-        document.querySelector('._pb_toolbar').addEventListener('mousedown', function(e){
-            selection = saveSelection();
-        });
-        document.querySelector('._pb_toolbar').addEventListener('click', function(e){
-            var el = e.target;
-
-            while (el && el != this && !el.hasAttribute('data-action')) {
-                el = el.parentElement;
-            }
-
-            if (el && el != this) {
-                var action = el.getAttribute('data-action');
-
-                rte.focus();
-                restoreSelection(selection);
-
-                switch (action) {
-                    case 'bold':
-                        document.execCommand('bold');
-                        break;
-                    case 'italic':
-                        document.execCommand('italic');
-                        break;
-                    case 'underline':
-                        document.execCommand('underline');
-                        break;
+        var toolbarItems = {
+            bold: {
+                html: '<a class="_pb_button" data-action="bold"><i class="material-icons">format_bold</i></a>',
+                runCommand: function() {
+                    document.execCommand('bold');
+                },
+                updateState: function(node, style) {
+                    if (style.fontWeight == 'bold') this.element.classList.add('active');
+                    else this.element.classList.remove('active');
+                }
+            },
+            italic: {
+                html: '<a class="_pb_button" data-action="italic"><i class="material-icons">format_italic</i></a>',
+                runCommand: function() {
+                    document.execCommand('italic');
+                },
+                updateState: function(node, style) {
+                    if (style.fontStyle == 'italic') this.element.classList.add('active');
+                    else this.element.classList.remove('active');
+                }
+            },
+            underline: {
+                html: '<a class="_pb_button" data-action="underline"><i class="material-icons">format_underline</i></a>',
+                runCommand: function() {
+                    document.execCommand('underline');
+                },
+                updateState: function(node, style) {
+                    if (style.textDecoration == 'underline') this.element.classList.add('active');
+                    else this.element.classList.remove('active');
                 }
             }
-        });
+            // ,
+            // divider1: {
+            //     html: '<span class="_pb_divider"></span>',
+            //     updateState: function(node, style) {}
+            // }
+        };
+
+        (function(){
+            var div = document.createElement('div'),
+                toolbar = document.querySelector('._pb_toolbar');
+
+            for (let key in toolbarItems) {
+                div.innerHTML = toolbarItems[key].html;
+                toolbarItems[key].element = div.firstElementChild;
+                toolbar.appendChild(toolbarItems[key].element);
+            }
+
+            toolbar.addEventListener('mousedown', function(e){
+                selection = saveSelection();
+            });
+
+            toolbar.addEventListener('click', function(e){
+                var el = e.target;
+
+                while (el && el != this && !el.hasAttribute('data-action')) {
+                    el = el.parentElement;
+                }
+
+                if (el && el != this && el.tagName.toLowerCase() != 'select') {
+                    var action = el.getAttribute('data-action');
+
+                    rte.focus();
+                    restoreSelection(selection);
+
+                    toolbarItems[action].runCommand();
+                }
+            });
+        })();
 
         document.addEventListener('selectionchange', function(){
             var range = saveSelection();
@@ -103,9 +134,9 @@
             }
             var style = getComputedStyle(startNode);
 
-            var button = document.querySelector('[data-action="bold"]');
-            if (style.fontWeight == 'bold') button.classList.add('active');
-            else button.classList.remove('active');
+            for (let key in toolbarItems) {
+                toolbarItems[key].updateState(startNode, style);
+            }
         });
     </script>
 
