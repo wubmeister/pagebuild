@@ -44,9 +44,12 @@ body {
     border-radius: 3px;
     background-color: #424242;
     color: white;
-    display: flex;
     align-items: center;
     padding: 2px 4px;
+    display: none;
+}
+._pb_toolbar._pb_visible {
+    display: flex;
 }
 ._pb_toolbar:after {
     content: "";

@@ -86,17 +86,66 @@
                     if (style.textDecoration == 'underline') this.element.classList.add('active');
                     else this.element.classList.remove('active');
                 }
+            },
+            divider1: {
+                html: '<span class="_pb_divider"></span>',
+                updateState: function(node, style) {}
+            },
+            left: {
+                html: '<a class="_pb_button" data-action="left"><i class="material-icons">format_align_left</i></a>',
+                runCommand: function() {
+                    document.execCommand('justifyLeft');
+                },
+                updateState: function(node, style) {
+                    if (style.textAlign == 'left') this.element.classList.add('active');
+                    else this.element.classList.remove('active');
+                }
+            },
+            center: {
+                html: '<a class="_pb_button" data-action="center"><i class="material-icons">format_align_center</i></a>',
+                runCommand: function() {
+                    document.execCommand('justifyCenter');
+                },
+                updateState: function(node, style) {
+                    if (style.textAlign == 'center') this.element.classList.add('active');
+                    else this.element.classList.remove('active');
+                }
+            },
+            right: {
+                html: '<a class="_pb_button" data-action="right"><i class="material-icons">format_align_right</i></a>',
+                runCommand: function() {
+                    document.execCommand('justifyRight');
+                },
+                updateState: function(node, style) {
+                    if (style.textAlign == 'right') this.element.classList.add('active');
+                    else this.element.classList.remove('active');
+                }
+            },
+            justify: {
+                html: '<a class="_pb_button" data-action="justify"><i class="material-icons">format_align_justify</i></a>',
+                runCommand: function() {
+                    document.execCommand('justifyFull');
+                },
+                updateState: function(node, style) {
+                    if (style.textAlign == 'justify') this.element.classList.add('active');
+                    else this.element.classList.remove('active');
+                }
             }
-            // ,
-            // divider1: {
-            //     html: '<span class="_pb_divider"></span>',
-            //     updateState: function(node, style) {}
-            // }
         };
 
         (function(){
             var div = document.createElement('div'),
-                toolbar = document.querySelector('._pb_toolbar');
+                toolbar = document.querySelector('._pb_toolbar'),
+                hideTimeout = null;
+
+            function hideToolbar() {
+                if (hideTimeout) {
+                    clearTimeout(hideTimeout);
+                }
+                hideTimeout = setTimeout(function(){
+                    toolbar.classList.remove('_pb_visible');
+                }, 200);
+            }
 
             for (let key in toolbarItems) {
                 div.innerHTML = toolbarItems[key].html;
@@ -111,6 +160,11 @@
             toolbar.addEventListener('click', function(e){
                 var el = e.target;
 
+                if (hideTimeout) {
+                    clearTimeout(hideTimeout);
+                    hideTimeout = null;
+                }
+
                 while (el && el != this && !el.hasAttribute('data-action')) {
                     el = el.parentElement;
                 }
@@ -123,6 +177,13 @@
 
                     toolbarItems[action].runCommand();
                 }
+            });
+
+            rte.addEventListener('focus', function(){
+                toolbar.classList.add('_pb_visible');
+            });
+            rte.addEventListener('blur', function(){
+                hideToolbar();
             });
         })();
 
