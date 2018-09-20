@@ -229,56 +229,35 @@ body {
 ._pb_bounding_box ._pb_action_button .material-icons {
     font-size: 18px;
 }
-._pb_bounding_box ._pb_action_button:first-child {
+._pb_bounding_box ._pb_left ._pb_action_button:first-child,
+._pb_bounding_box ._pb_right ._pb_action_button:first-child {
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
 }
-._pb_bounding_box ._pb_action_button:last-child {
+._pb_bounding_box ._pb_left ._pb_action_button:last-child,
+._pb_bounding_box ._pb_right ._pb_action_button:last-child {
     border-bottom-left-radius: 12px;
     border-bottom-right-radius: 12px;
 }
-/*
-._pb_bounding_box ._pb_insert_above {
-    top: -13px;
-    left: 50%;
-    margin-left: 2px;
+._pb_bounding_box ._pb_top ._pb_action_button:first-child,
+._pb_bounding_box ._pb_bottom ._pb_action_button:first-child {
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
 }
-._pb_bounding_box ._pb_insert_below {
-    bottom: -13px;
-    left: 50%;
-    margin-left: 2px;
+._pb_bounding_box ._pb_top ._pb_action_button:last-child,
+._pb_bounding_box ._pb_bottom ._pb_action_button:last-child {
+    border-top-right-radius: 12px;
+    border-bottom-right-radius: 12px;
 }
-._pb_bounding_box ._pb_move_up {
-    top: -13px;
-    left: 50%;
-    margin-left: -26px;
+._pb_bounding_box._pb_or_horizontal ._pb_button_group._pb_top,
+._pb_bounding_box._pb_or_horizontal ._pb_button_group._pb_bottom {
+    display: none;
 }
-._pb_bounding_box ._pb_move_down {
-    bottom: -13px;
-    left: 50%;
-    margin-left: -26px;
+._pb_bounding_box._pb_or_vertical ._pb_button_group._pb_left,
+._pb_bounding_box._pb_or_vertical ._pb_button_group._pb_right {
+    display: none;
 }
-._pb_bounding_box ._pb_move_left {
-    left: -13px;
-    top: 50%;
-    margin-top: -26px;
-}
-._pb_bounding_box ._pb_move_right {
-    right: -13px;
-    top: 50%;
-    margin-top: -26px;
-}
-._pb_bounding_box ._pb_insert_before {
-    left: -13px;
-    top: 50%;
-    margin-top: 2px;
-}
-._pb_bounding_box ._pb_insert_after {
-    right: -13px;
-    top: 50%;
-    margin-top: 2px;
-}
-*/
+
 ._pb_bounding_box ._pb_delete {
     position: absolute;
     top: -13px;

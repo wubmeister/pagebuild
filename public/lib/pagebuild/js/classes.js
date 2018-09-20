@@ -192,9 +192,10 @@ var Interface = {
             return;
         }
 
+        this.hideAddBox();
         this.updateBoundingBox(nodeElement);
-        this.boundingBox.classList.add('_pb_visible');
         this.selectedNode = nodeElement.wtNode;
+        this.boundingBox.className = '_pb_bounding_box _pb_visible _pb_or_' + (this.selectedNode.parent ? this.selectedNode.parent.getContentOrientation() : 'vertical');
 
         setTimeout(function(){
             Interface.showSettingsBox(Interface.selectedNode);
@@ -207,6 +208,7 @@ var Interface = {
     },
     showSettingsBox: function(node) {
         if (node.component.settings.length == 0) {
+            this.settingsBox.classList.remove('_pb_visible');
             return;
         }
 
@@ -214,7 +216,7 @@ var Interface = {
             selects;
 
         settingsContent.innerHTML = this.buildSettingsForm(node.component.settings, node.settings);
-        this.placeElement(this.settingsBox, this.getDimensions(node.element), 's');
+        this.placeElement(this.settingsBox, this.getDimensions(this.boundingBox), 's', 20);
         this.settingsBox.classList.add('_pb_visible');
 
         selects = settingsContent.querySelectorAll('._pb_select');
@@ -292,13 +294,21 @@ var Interface = {
         this.boundingBox = document.createElement('div');
         this.boundingBox.className = '_pb_bounding_box';
         this.boundingBox.innerHTML = `
-            <div class="_pb_button_group _pb_left">
+            <div class="_pb_button_group _pb_top">
                 <a class="_pb_action_button _pb_insert_before" data-action="add" data-placement="before"><i class="material-icons">add</i></a>
-                <a class="_pb_action_button _pb_move_left"><i class="material-icons">keyboard_arrow_left</i></a>
+                <a class="_pb_action_button _pb_move_left"><i class="material-icons">keyboard_arrow_up</i></a>
             </div>
             <div class="_pb_button_group _pb_right">
                 <a class="_pb_action_button _pb_insert_after" data-action="add" data-placement="after"><i class="material-icons">add</i></a>
                 <a class="_pb_action_button _pb_move_right"><i class="material-icons">keyboard_arrow_right</i></a>
+            </div>
+            <div class="_pb_button_group _pb_bottom">
+                <a class="_pb_action_button _pb_insert_after" data-action="add" data-placement="after"><i class="material-icons">add</i></a>
+                <a class="_pb_action_button _pb_move_right"><i class="material-icons">keyboard_arrow_down</i></a>
+            </div>
+            <div class="_pb_button_group _pb_left">
+                <a class="_pb_action_button _pb_insert_before" data-action="add" data-placement="before"><i class="material-icons">add</i></a>
+                <a class="_pb_action_button _pb_move_left"><i class="material-icons">keyboard_arrow_left</i></a>
             </div>
             <a class="_pb_action_button _pb_circle_button _pb_delete" data-action="delete"><i class="material-icons">delete</i></a>`;
         this.boundingBox.addEventListener('click', function(e){
@@ -490,6 +500,20 @@ class WorkingTreeNode {
                 alert(errorMessage);
             }
         });
+    }
+
+    getContentOrientation() {
+        if (!this.contentElement.pbOrientation) {
+            var style = getComputedStyle(this.contentElement);
+console.log(style.display, style.flexDirection);
+            if ((style.display == 'flex' || style.display == 'inline-flex') && (style.flexDirection == 'row' || style.flexDirection == 'row-reverse')) {
+                this.contentElement.pbOrientation = 'horizontal';
+            } else {
+                this.contentElement.pbOrientation = 'vertical';
+            }
+        }
+
+        return this.contentElement.pbOrientation;
     }
 }
 
