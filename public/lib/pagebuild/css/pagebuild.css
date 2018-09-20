@@ -70,6 +70,9 @@ body {
     font-size: 18px;
     vertical-align: middle;
 }
+._pb_toolbar ._pb_button.active {
+    background-color: rgba(255, 255, 255, 0.1);
+}
 ._pb_toolbar ._pb_button:hover {
     background-color: rgba(255, 255, 255, 0.2);
 }

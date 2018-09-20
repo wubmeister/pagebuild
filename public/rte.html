@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Pagebuild</title>
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons|Roboto:400,500,700" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="lib/pagebuild/css/pagebuild.css" />
+
+    <style>
+    body {
+        margin: 15px;
+    }
+    .rte {
+        background: #ebebeb;
+        margin-top: 50px;
+        line-height: 1.25;
+        min-height: 1.25em;
+    }
+    </style>
+</head>
+<body>
+
+    <div class="_pb_toolbar" style="left: 15px; top: 15px;">
+        <a class="_pb_button" data-action="bold"><i class="material-icons">format_bold</i></a>
+        <a class="_pb_button" data-action="italic"><i class="material-icons">format_italic</i></a>
+        <a class="_pb_button" data-action="underline"><i class="material-icons">format_underline</i></a>
+        <span class="_pb_divider"></span>
+        <a class="_pb_button" data-action="align-left"><i class="material-icons">format_align_left</i></a>
+        <a class="_pb_button" data-action="align-center"><i class="material-icons">format_align_center</i></a>
+        <a class="_pb_button" data-action="align-right"><i class="material-icons">format_align_right</i></a>
+        <a class="_pb_button" data-action="align-justify"><i class="material-icons">format_align_justify</i></a>
+    </div>
+
+    <div class="rte" contenteditable="true"></div>
+
+    <script>
+        var rte = document.querySelector('.rte'),
+            selection;
+
+        /**
+         * Safari/Firefox/Chrome/IE 10-11/Edge: Range
+         */
+        function saveSelection() {
+            if (window.getSelection) {
+                var sel = window.getSelection();
+                if (sel.getRangeAt && sel.rangeCount) {
+                    return sel.getRangeAt(0);
+                }
+            } else if (document.selection && document.selection.createRange) {
+                return document.selection.createRange();
+            }
+            return null;
+        }
+
+        function restoreSelection(range) {
+            if (range) {
+                if (window.getSelection) {
+                    var sel = window.getSelection();
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                } else if (document.selection && range.select) {
+                    range.select();
+                }
+            }
+        }
+
+        document.querySelector('._pb_toolbar').addEventListener('mousedown', function(e){
+            selection = saveSelection();
+        });
+        document.querySelector('._pb_toolbar').addEventListener('click', function(e){
+            var el = e.target;
+
+            while (el && el != this && !el.hasAttribute('data-action')) {
+                el = el.parentElement;
+            }
+
+            if (el && el != this) {
+                var action = el.getAttribute('data-action');
+
+                rte.focus();
+                restoreSelection(selection);
+
+                switch (action) {
+                    case 'bold':
+                        document.execCommand('bold');
+                        break;
+                    case 'italic':
+                        document.execCommand('italic');
+                        break;
+                    case 'underline':
+                        document.execCommand('underline');
+                        break;
+                }
+            }
+        });
+
+        document.addEventListener('selectionchange', function(){
+            var range = saveSelection();
+            var startNode = range.startContainer;
+            if (startNode.nodeType != Node.ELEMENT_NODE) {
+                startNode = startNode.parentElement;
+            }
+            var style = getComputedStyle(startNode);
+
+            var button = document.querySelector('[data-action="bold"]');
+            if (style.fontWeight == 'bold') button.classList.add('active');
+            else button.classList.remove('active');
+        });
+    </script>
+
+</body>
+</html>
