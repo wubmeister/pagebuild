@@ -433,11 +433,9 @@ function RichTextEditor() {
         rte = this;
         var left = 0, top = 0, el = this;
         while (el) {
-            if (el.offsetParent) {
-                left += el.offsetLeft;
-                top += el.offsetTop;
-            }
-            el = el.parentElement;
+            left += el.offsetLeft;
+            top += el.offsetTop;
+            el = el.offsetParent;
         }
 
         toolbar.style.left = left + 'px';

@@ -489,3 +489,7 @@ body {
 ._pb_highlighter._pb_visible {
     opacity: 0.25;
 }
+
+[contenteditable] {
+    outline: none;
+}

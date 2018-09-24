@@ -82,7 +82,7 @@ var Interface = {
         var left, top;
 
         offset = offset || 10;
-console.log(reference);
+
         switch (placement) {
             case 'n':
                 left = reference.left + (reference.width - width) / 2;
@@ -400,7 +400,6 @@ console.log(reference);
             <a class="_pb_button _pb_heading _pb_heading_5" data-heading="h5">H5</a>
             <a class="_pb_button _pb_heading _pb_heading_6" data-heading="h6">H6</a>`;
         this.headingBar.addEventListener('click', function(e) {
-            // console.log(e.target.getAttribute('data-heading'));
             Interface.updateSettingValue('type', e.target.getAttribute('data-heading'));
         });
         document.body.appendChild(this.headingBar);
@@ -450,6 +449,13 @@ console.log(reference);
         }
 
         return formHtml;
+    },
+    enableRichText: function(element) {
+        if (!this.richTextEditor) {
+            this.richTextEditor = new RichTextEditor();
+        }
+
+        this.richTextEditor.edit(element);
     }
 };
 
@@ -532,25 +538,17 @@ class WorkingTreeNode {
     }
 
     insertAfter(child, reference) {
-        // if (reference.parent != this) {
-        //     console.error('Reference node is not a direct child');
-        //     return;
-        // }
-
-        // child.parent = this;
-        // child.nextSibling = reference.nextSibling;
-        // if (reference.nextSibling) reference.nextSibling.previousSibling = child;
-        // child.previousSibling = reference;
-        // reference.nextSibling = child;
-        // if (reference == this.lastChild) this.lastChild = child;
-
-        // this.contentElement.insertBefore(child.element, reference.element.nextSibling);
         this.insertBefore(child, reference ? reference.nextSibling : null);
     }
 
     render() {
         var result = this.component.updateElement(this.element, this.settings, this.contentElement);
-        this.element = result.element;
+        if (result.element != this.element) {
+            this.element = result.element;
+            if (this.component.contentType == 'richtext') {
+                Interface.enableRichText(this.element);
+            }
+        }
         this.contentElement = result.contentElement;
         this.element.wtNode = this;
     }
