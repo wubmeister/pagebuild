@@ -352,14 +352,14 @@ function RichTextEditor() {
                 <input type="text" name="href" id="rte_link_href" placeholder="URL" />
             </div>
             <div class="_pb_field">
-                <label for="rte_link_target">Select field</label>
+                <label for="rte_link_target">Open in</label>
                 <div class="_pb_select">
                     <span class="_pb_label"></span>
                     <select name="target" id="rte_link_target">
-                        <option value="_self">Zelfde venster/frame</option>
-                        <option value="_blank">Nieuw venster/tabblad</option>
-                        <option value="_parent">Bovenliggende venster/frame</option>
-                        <option value="_parent">Bovenste venster/frame</option>
+                        <option value="_self">Same window/frame</option>
+                        <option value="_blank">New window/tab</option>
+                        <option value="_parent">Parent window/frame</option>
+                        <option value="_parent">Top window/frame</option>
                     </select>
                 </div>
             </div>
