@@ -433,7 +433,10 @@ function RichTextEditor() {
     }
 
     this.edit = function(element) {
-        element.addEventListener('focus', onFocus);
-        element.addEventListener('blur', onBlur);
+        if (!('_rte' in element)) {
+            element.addEventListener('focus', onFocus);
+            element.addEventListener('blur', onBlur);
+            element._rte = true;
+        }
     };
 }
