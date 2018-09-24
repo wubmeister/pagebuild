@@ -16,6 +16,7 @@
         margin-top: 50px;
         line-height: 1.25;
         min-height: 1.25em;
+        outline: none;
     }
     </style>
 </head>
@@ -24,6 +25,7 @@
     <div class="rte" contenteditable="true"></div>
 
     <script src="lib/pagebuild/js/rte.js"></script>
+    <script src="lib/pagebuild/js/pagebuild.js"></script>
     <script>
     var editor = new RichTextEditor();
     editor.edit(document.querySelector('.rte'));

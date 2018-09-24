@@ -84,6 +84,10 @@ body {
 ._pb_toolbar ._pb_button:hover {
     background-color: rgba(255, 255, 255, 0.2);
 }
+._pb_toolbar ._pb_button._pb_disabled {
+    color: rgba(255, 255, 255, 0.2);
+    pointer-events: none;
+}
 ._pb_toolbar ._pb_button._pb_heading {
     font-family: Georgia, serif;
     font-weight: bold;
@@ -159,6 +163,10 @@ body {
 }
 ._pb_header > ._pb_tabs {
     margin: -16px;
+}
+._pb_panel > ._pb_actions {
+    padding: 8px;
+    text-align: right;
 }
 
 ._pb_panel._pb_blue:after {
@@ -411,6 +419,13 @@ body {
     opacity: 0;
 }
 
+._pb_field ._pb_select {
+    max-width: 50%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 ._pb_sidebar {
     position: fixed;
     top: 0; right: 0; bottom: 0;
@@ -446,4 +461,31 @@ body {
     width: 50%;
     padding: 16px;
     text-align: center;
+}
+
+._pb_panel > ._pb_actions ._pb_button {
+    -webkit-appearance: none;
+    border: none;
+    border-radius: 2px;
+    background: none;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #3498DB;
+    cursor: pointer;
+    padding: 0 8px;
+    height: 36px;
+    line-height: 36px;
+}
+
+._pb_highlighter {
+    position: absolute;
+    background-color: #3498DB;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 10;
+}
+._pb_highlighter._pb_visible {
+    opacity: 0.25;
 }
