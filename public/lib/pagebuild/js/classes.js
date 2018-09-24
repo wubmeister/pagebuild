@@ -82,7 +82,7 @@ var Interface = {
         var left, top;
 
         offset = offset || 10;
-
+console.log(reference);
         switch (placement) {
             case 'n':
                 left = reference.left + (reference.width - width) / 2;
@@ -185,6 +185,7 @@ var Interface = {
         this.boundingBox.style.top = dim.top + 'px';
         this.boundingBox.style.width = dim.width + 'px';
         this.boundingBox.style.height = dim.height + 'px';
+        this.placeElement(this.settingsBox, this.getDimensions(this.boundingBox), 's', 20);
     },
     selectNode: function(nodeElement) {
         if (!nodeElement.wtNode) {
@@ -212,9 +213,16 @@ var Interface = {
             return;
         }
 
+        if (node.component.contentType == 'heading') {
+            this.settingsBox.classList.remove('_pb_visible');
+            this.showHeadingBar(node);
+            return;
+        }
+
         var settingsContent = this.settingsBox.querySelector('._pb_content'),
             selects;
 
+        this.headingBar.classList.remove('_pb_visible');
         settingsContent.innerHTML = this.buildSettingsForm(node.component.settings, node.settings);
         this.placeElement(this.settingsBox, this.getDimensions(this.boundingBox), 's', 20);
         this.settingsBox.classList.add('_pb_visible');
@@ -224,8 +232,13 @@ var Interface = {
             CustomSelect(selects[i]);
         }
     },
+    showHeadingBar: function(node) {
+        this.placeElement(this.headingBar, this.getDimensions(this.boundingBox), 'n', 20);
+        this.headingBar.classList.add('_pb_visible');
+    },
     hideSettingsBox: function() {
         this.settingsBox.classList.remove('_pb_visible');
+        this.headingBar.classList.remove('_pb_visible');
     },
     updateSettingValue: function(name, value) {
         if (this.selectedNode) {
@@ -296,19 +309,19 @@ var Interface = {
         this.boundingBox.innerHTML = `
             <div class="_pb_button_group _pb_top">
                 <a class="_pb_action_button _pb_insert_before" data-action="add" data-placement="before"><i class="material-icons">add</i></a>
-                <a class="_pb_action_button _pb_move_left"><i class="material-icons">keyboard_arrow_up</i></a>
+                <a class="_pb_action_button _pb_move_left" data-action="move-up"><i class="material-icons">keyboard_arrow_up</i></a>
             </div>
             <div class="_pb_button_group _pb_right">
                 <a class="_pb_action_button _pb_insert_after" data-action="add" data-placement="after"><i class="material-icons">add</i></a>
-                <a class="_pb_action_button _pb_move_right"><i class="material-icons">keyboard_arrow_right</i></a>
+                <a class="_pb_action_button _pb_move_right" data-action="move-down"><i class="material-icons">keyboard_arrow_right</i></a>
             </div>
             <div class="_pb_button_group _pb_bottom">
                 <a class="_pb_action_button _pb_insert_after" data-action="add" data-placement="after"><i class="material-icons">add</i></a>
-                <a class="_pb_action_button _pb_move_right"><i class="material-icons">keyboard_arrow_down</i></a>
+                <a class="_pb_action_button _pb_move_right" data-action="move-down"><i class="material-icons">keyboard_arrow_down</i></a>
             </div>
             <div class="_pb_button_group _pb_left">
                 <a class="_pb_action_button _pb_insert_before" data-action="add" data-placement="before"><i class="material-icons">add</i></a>
-                <a class="_pb_action_button _pb_move_left"><i class="material-icons">keyboard_arrow_left</i></a>
+                <a class="_pb_action_button _pb_move_left" data-action="move-up"><i class="material-icons">keyboard_arrow_left</i></a>
             </div>
             <a class="_pb_action_button _pb_circle_button _pb_delete" data-action="delete"><i class="material-icons">delete</i></a>`;
         this.boundingBox.addEventListener('click', function(e){
@@ -324,6 +337,18 @@ var Interface = {
                 switch (el.getAttribute('data-action')) {
                     case 'add':
                         Interface.showAddBox(el, Interface.selectedNode.parent.component.getAllowedChildren());
+                        break;
+                    case 'move-up':
+                        if (Interface.selectedNode.previousSibling) {
+                            Interface.selectedNode.parent.insertBefore(Interface.selectedNode, Interface.selectedNode.previousSibling);
+                            Interface.updateBoundingBox(Interface.selectedNode.element);
+                        }
+                        break;
+                    case 'move-down':
+                        if (Interface.selectedNode.nextSibling) {
+                            Interface.selectedNode.parent.insertAfter(Interface.selectedNode, Interface.selectedNode.nextSibling);
+                            Interface.updateBoundingBox(Interface.selectedNode.element);
+                        }
                         break;
                     case 'delete':
                         if (confirm("Are you sure you want to delete this component?")) {
@@ -364,6 +389,21 @@ var Interface = {
             }
         });
         document.body.appendChild(this.settingsBox);
+
+        this.headingBar = document.createElement('div');
+        this.headingBar.className = '_pb_toolbar';
+        this.headingBar.innerHTML = `
+            <a class="_pb_button _pb_heading _pb_heading_1" data-heading="h1">H1</a>
+            <a class="_pb_button _pb_heading _pb_heading_2" data-heading="h2">H2</a>
+            <a class="_pb_button _pb_heading _pb_heading_3" data-heading="h3">H3</a>
+            <a class="_pb_button _pb_heading _pb_heading_4" data-heading="h4">H4</a>
+            <a class="_pb_button _pb_heading _pb_heading_5" data-heading="h5">H5</a>
+            <a class="_pb_button _pb_heading _pb_heading_6" data-heading="h6">H6</a>`;
+        this.headingBar.addEventListener('click', function(e) {
+            // console.log(e.target.getAttribute('data-heading'));
+            Interface.updateSettingValue('type', e.target.getAttribute('data-heading'));
+        });
+        document.body.appendChild(this.headingBar);
 
         window.addEventListener('resize', this.onResize.bind(this));
     },
@@ -419,17 +459,23 @@ class WorkingTreeNode {
         this.element.className = '_pb_box';
         this.contentElement = null;
 
+        this.parent = null;
+        this.firstChild = null;
+        this.lastChild = null;
+        this.previousSibling = null;
+        this.nextSibling = null;
+
         if (component instanceof Component) {
             this.id = null;
             this.component = component;
             this.settings = component.getDefaultSettings();
-            this.children = [];
+            // this.children = [];
             this.render();
         } else {
             this.id = component.id || null;
             this.component = Component.get(component.component);
             this.settings = component.settings || this.component.getDefaultSettings();
-            this.children = [];
+            // this.children = [];
             this.render();
             if ('children' in component) {
                 for (let i = 0; i < component.children.length; i++) {
@@ -440,30 +486,66 @@ class WorkingTreeNode {
     }
 
     appendChild(child) {
-        if (this.children.length == 0) {
+        // if (this.children.length == 0) {
+        if (!this.firstChild) {
             this.contentElement.innerHTML = '';
         }
+
         child.parent = this;
-        this.children.push(child);
+        // this.children.push(child);
+        if (!this.firstChild) {
+            this.firstChild = this.lastChild = child;
+        } else {
+            child.previousSibling = this.lastChild;
+            this.lastChild.nextSibling = child;
+            this.lastChild = child;
+        }
+
         this.contentElement.appendChild(child.element);
     }
 
     insertBefore(child, reference) {
-        if (reference.parent != this) {
+        if (!reference) {
+            this.appendChild(child);
+            return;
+        }
+
+        if (!reference.parent || reference.parent != this) {
             console.error('Reference node is not a direct child');
             return;
         }
+
         child.parent = this;
+        if (child.previousSibling) {
+            child.previousSibling.nextSibling = child.nextSibling;
+        }
+        if (child.nextSibling) {
+            child.nextSibling.previousSibling = child.previousSibling;
+        }
+        child.previousSibling = reference.previousSibling;
+        if (reference.previousSibling) reference.previousSibling.nextSibling = child;
+        child.nextSibling = reference;
+        reference.previousSibling = child;
+        if (reference == this.firstChild) this.firstChild = child;
+
         this.contentElement.insertBefore(child.element, reference.element);
     }
 
     insertAfter(child, reference) {
-        if (reference.parent != this) {
-            console.error('Reference node is not a direct child');
-            return;
-        }
-        child.parent = this;
-        this.contentElement.insertBefore(child.element, reference.element.nextSibling);
+        // if (reference.parent != this) {
+        //     console.error('Reference node is not a direct child');
+        //     return;
+        // }
+
+        // child.parent = this;
+        // child.nextSibling = reference.nextSibling;
+        // if (reference.nextSibling) reference.nextSibling.previousSibling = child;
+        // child.previousSibling = reference;
+        // reference.nextSibling = child;
+        // if (reference == this.lastChild) this.lastChild = child;
+
+        // this.contentElement.insertBefore(child.element, reference.element.nextSibling);
+        this.insertBefore(child, reference ? reference.nextSibling : null);
     }
 
     render() {
@@ -506,7 +588,7 @@ class WorkingTreeNode {
     getContentOrientation() {
         if (!this.contentElement.pbOrientation) {
             var style = getComputedStyle(this.contentElement);
-console.log(style.display, style.flexDirection);
+
             if ((style.display == 'flex' || style.display == 'inline-flex') && (style.flexDirection == 'row' || style.flexDirection == 'row-reverse')) {
                 this.contentElement.pbOrientation = 'horizontal';
             } else {
@@ -528,6 +610,7 @@ class Component {
         this.allowParents = specs.allowParents || [];
         this.settings = specs.settings || [];
         this.allowedChildren = null;
+        this.contentType = specs.contentType || 'default';
     }
 
     updateElement(element, settings, contentElement) {

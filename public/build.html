@@ -84,6 +84,7 @@
             "label": "Heading",
             "thumb": "assets/thumbs/basic/heading.svg",
             "html": "<{{type}} class=\"basic heading\" contenteditable=\"true\">Heading</{{type}}>",
+            "contentType": "heading",
             "settings": [
                 {
                     "name": "type",
@@ -145,7 +146,7 @@
     window.addEventListener('click', function(e) {
         var el = e.target;
 
-        while (el && !el.classList.contains('_pb_add_button') && !el.classList.contains('_pb_box') && !el.classList.contains('_pb_panel')) el = el.parentElement;
+        while (el && !el.classList.contains('_pb_add_button') && !el.classList.contains('_pb_box') && !el.classList.contains('_pb_panel') && !el.classList.contains('_pb_toolbar')) el = el.parentElement;
         if (el) {
             e.preventDefault();
             if (el.classList.contains('_pb_box')) {
