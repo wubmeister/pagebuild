@@ -266,6 +266,25 @@ function RichTextEditor() {
                 //     linkDialog.classList.remove('_pb_visible');
                 // }
             }
+        },
+        unlink: {
+            html: '<a class="_pb_button" data-action="unlink"><i class="material-icons">link_off</i></a>',
+            directAction: true,
+            runCommand: function() {
+                var el = selection.startContainer;
+                if (el.nodeType != Node.ELEMENT_NODE) el = el.parentElement;
+
+                if (el && el != rte) {
+                    // selection.selectNode(el);
+                    // restoreSelection(selection);
+                    // document.execCommand('insertText', false, el.textContent);
+                    el.parentElement.replaceChild(document.createTextNode(el.textContent), el);
+                }
+            },
+            updateState: function(node, style, selection) {
+                if (node.tagName != 'A') this.element.classList.add('_pb_disabled');
+                else this.element.classList.remove('_pb_disabled');
+            }
         }
     };
 
