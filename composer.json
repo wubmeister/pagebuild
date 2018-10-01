@@ -1,0 +1,24 @@
+{
+    "name": "Pagebuild",
+    "type": "project",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Wubbo Bos",
+            "email": "wubbo@wubbobos.nl",
+            "homepage": "http://wubbobos.nl",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "DatabaseKit\\": "lib/DatabaseKit/src/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7"
+    },
+    "scripts": {
+        "test": "vendor/phpunit/phpunit/phpunit --bootstrap vendor/autoload.php"
+    }
+}
