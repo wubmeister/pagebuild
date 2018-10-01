@@ -1,5 +1,9 @@
 <?php
 
+namespace DatabaseKit;
+
+use DatabaseKit\Query\Condition;
+
 /**
  * Represnts an SQL query
  *
@@ -9,6 +13,12 @@ class Query
 {
     const RHP_VALUE = 1;
     const RHP_COLUMN = 2;
+
+    const GLUE_AND = 1;
+    const GLUE_OR = 2;
+
+    const IGNORE = 1;
+    const UPDATE = 2;
 
     protected $db;
     protected $parts = [];
@@ -70,55 +80,10 @@ class Query
         }
     }
 
-    protected function buildConditions($array, $rightHandPolicy = self::RHP_VALUE)
+    protected function buildConditions($array, $glue = self::GLUE_AND, $rightHandPolicy = self::RHP_VALUE)
     {
-        $conditions = [];
-
-        foreach ($array as $key => $value) {
-            if (is_array($value)) {
-                $op = current(array_keys($value));
-                $val = '?';
-                $insertValue = $value[$op];
-
-                switch ($op) {
-                    case '$lt':
-                        $operand = '<';
-                        break;
-                    case '$lte':
-                        $operand = '<=';
-                        break;
-                    case '$gt':
-                        $operand = '>';
-                        break;
-                    case '$gte':
-                        $operand = '>=';
-                        break;
-                    case '$neq':
-                        $operand = '<>';
-                        break;
-                    case '$like':
-                        $operand = 'LIKE';
-                        break;
-                    case '$between':
-                        $operand = 'BETWEEN';
-                        $val = '? AND ?';
-                        break;
-                }
-            } else {
-                $insertValue = $value;
-                $operand = '=';
-                $val = '?';
-            }
-
-            $condition = $this->db->quoteIdentifier($key) . ' ' . $operand . ' ' . $val;
-            if ($rightHandPolicy == self::RHP_COLUMN && is_string($insertValue)) {
-                $condition = str_replace('?', $this->db->quoteIdentifier($insertValue), $condition);
-            }
-
-            $conditions[] = $condition;
-        }
-
-
+        $conditions = $glue == self::GLUE_OR ? [ '$or' => $array ] : [ '$and' => $array ];
+        return new Condition($conditions);
     }
 
     public function from($table, $columns = '*')
@@ -150,51 +115,61 @@ class Query
         $table = $this->tableDef($table);
 
         if (!$this->parts['join'])
-        $this->parts['join'] = strtoupper($type) . ' ' . $result['sql'];
-
+        $this->parts['join'] = [
+            strtoupper($type) . ' ' . $result['sql'],
+            $this->buildConditions($condition, self::GLUE_AND, self::RHP_COLUMN)->stringify($this->db)
+        ];
     }
 
 
     public function where($conditions)
     {
-
+        $this->parts['where'] = $this->buildConditions($conditions);
     }
 
     public function having($conditions)
     {
-
+        $this->parts['having'] = $this->buildConditions($conditions);
     }
 
 
     public function groupBy($columns)
     {
-
+        if (!$this->parts['group by']) {
+            $this->parts['group by'] = [];
+        }
     }
 
     public function orderBy($columns)
     {
-
+        if (!$this->parts['order by']) {
+            $this->parts['order by'] = [];
+        }
     }
 
     public function limit($limit)
     {
-
+        $this->parts['limit'] = $limit;
     }
 
     public function offset($offset)
     {
-
+        $this->parts['offset'] = $offset;
     }
-
 
     public function values($values)
     {
-
+        $this->parts['values'] = $value;
     }
 
-    public function onDuplicateKey($action = IGNORE | UPDATE, $updates = null)
+    public function onDuplicateKey($action, $updates = null)
     {
-
+        if ($action == self::IGNORE) {
+            $this->what = "INSERT IGNORE";
+        } else {
+            $this->what = "INSERT";
+            $this->parts['on duplicate key update'] = $updates;
+        }
     }
 
 }
