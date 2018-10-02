@@ -121,8 +121,20 @@ class Query
         ];
     }
 
-
     public function where($conditions)
+    {
+        if ($this->parts['where']) {
+            if ($this->parts['where']->getKey == '$and') {
+                $this->parts['where']->appendConditions($conditions);
+            } else {
+                $this->parts['where']->appendCondition($this->buildConditions(conditions));
+            }
+        } else {
+            $this->parts['where'] = $this->buildConditions($conditions);
+        }
+    }
+
+    public function orWhere($conditions)
     {
         $this->parts['where'] = $this->buildConditions($conditions);
     }
@@ -170,6 +182,11 @@ class Query
             $this->what = "INSERT";
             $this->parts['on duplicate key update'] = $updates;
         }
+    }
+
+    public function __toString()
+    {
+        $sql = $this->parts['what'];
     }
 
 }

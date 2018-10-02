@@ -111,4 +111,11 @@ class DatabaseKit_Query_ConditionTest extends TestCase
         $condition = new Condition('$and', [ 'a' => 'b', 'foo' => 'bar', '$or' => [ 'lorem' => 'ipsum', 'doler' => 'sit amet' ] ]);
         $this->assertEquals('("a" = ?) AND ("foo" = ?) AND (("lorem" = ?) OR ("doler" = ?))', $condition->stringify($this->database));
     }
+
+    public function testAppendCondition()
+    {
+        $condition = new Condition('$and', [ 'a' => 'b', 'foo' => 'bar' ]);
+        $condition->appendCondition(new Condition('$and', [ 'lorem' => 'ipsum' ]));
+        $this->assertEquals('("a" = ?) AND ("foo" = ?) AND ("lorem" = ?)', $condition->stringify($this->database));
+    }
 }

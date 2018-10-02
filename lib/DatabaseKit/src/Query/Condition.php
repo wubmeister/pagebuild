@@ -7,12 +7,12 @@ use DatabaseKit\Database;
 class Condition
 {
     protected $key;
-    protected $operand = '=';
+    protected $operator = '=';
     protected $value;
     protected $rightHand = '?';
     protected $conditions;
 
-    protected static $operandMap = [
+    protected static $operatorMap = [
         '$between' => 'BETWEEN',
         '$in' => 'IN',
         '$gt' => '>',
@@ -34,12 +34,12 @@ class Condition
         } else {
             if (is_array($value)) {
                 $key = current(array_keys($value));
-                $this->operand = self::$operandMap[$key] ? self::$operandMap[$key] : '=';
+                $this->operator = self::$operatorMap[$key] ? self::$operatorMap[$key] : '=';
                 $this->value = $value[$key];
 
-                if ($this->operand == 'BETWEEN') {
+                if ($this->operator == 'BETWEEN') {
                     $this->rightHand = '? AND ?';
-                } else if ($this->operand == 'IN') {
+                } else if ($this->operator == 'IN') {
                     $this->rightHand = '(?' . (count($this->value) > 0 ? str_repeat(', ?', count($this->value) - 1) : '') . ')';
                 }
             } else {
@@ -59,11 +59,16 @@ class Condition
             return implode($this->key == '$or' ? ' OR ' : ' AND ', $conditions);
         }
 
-        return $db->quoteIdentifier($this->key) . " {$this->operand} {$this->rightHand}";
+        return $db->quoteIdentifier($this->key) . " {$this->operator} {$this->rightHand}";
     }
 
     public function getBindValues()
     {
         return is_array($this->value) ? $this->value : [ $this->value ];
+    }
+
+    public function getKey()
+    {
+        return $this->key;
     }
 }
