@@ -3,6 +3,8 @@
 namespace DatabaseKit;
 
 use DatabaseKit\Query\Condition;
+use DatabaseKit\Query\Value;
+use DatabaseKit\Query\Column;
 
 /**
  * Represnts an SQL query
@@ -80,7 +82,7 @@ class Query
         }
     }
 
-    protected function buildConditions($array, $glue = self::GLUE_AND, $rightHandPolicy = self::RHP_VALUE)
+    protected function buildConditions($array, $glue = self::GLUE_AND, $rightHandPolicy = Condition::RHP_VALUE)
     {
         $conditions = $glue == self::GLUE_OR ? [ '$or' => $array ] : [ '$and' => $array ];
         return new Condition($conditions);
@@ -115,40 +117,75 @@ class Query
         $table = $this->tableDef($table);
 
         if (!$this->parts['join'])
-        $this->parts['join'] = [
-            strtoupper($type) . ' ' . $result['sql'],
-            $this->buildConditions($condition, self::GLUE_AND, self::RHP_COLUMN)->stringify($this->db)
-        ];
+        $this->parts['join'] =
+            strtoupper($type) . ' JOIN ' . $result['sql'] . ' ON ' .
+            $this->buildConditions($condition, self::GLUE_AND, Condition::RHP_COLUMN)->stringify($this->db);
+    }
+
+    protected function whereHaving($part, $conditions, $operator)
+    {
+        if ($this->parts[$part]) {
+            if ($this->parts[$part]->getKey == $operator) {
+                $this->parts[$part]->appendConditions($conditions);
+            } else {
+                $this->parts[$part]->appendCondition($this->buildConditions(conditions));
+            }
+        } else {
+            $this->parts[$part] = $this->buildConditions($conditions);
+        }
     }
 
     public function where($conditions)
     {
-        if ($this->parts['where']) {
-            if ($this->parts['where']->getKey == '$and') {
-                $this->parts['where']->appendConditions($conditions);
-            } else {
-                $this->parts['where']->appendCondition($this->buildConditions(conditions));
-            }
-        } else {
-            $this->parts['where'] = $this->buildConditions($conditions);
-        }
+        $this->whereHaving('where', $conditions, '$and');
     }
 
     public function orWhere($conditions)
     {
-        $this->parts['where'] = $this->buildConditions($conditions);
+        $this->whereHaving('where', $conditions, '$or');
     }
 
     public function having($conditions)
     {
-        $this->parts['having'] = $this->buildConditions($conditions);
+        $this->whereHaving('having', $conditions, '$and');
     }
 
+    public function orHaving($conditions)
+    {
+        $this->whereHaving('having', $conditions, '$or');
+    }
+
+    protected function groupOrder($part, $columns)
+    {
+        if (!$this->parts[$part]) {
+            $this->parts[$part] = [];
+        }
+
+        if (!is_array($columns)) {
+            $columns = [ $columns ];
+        }
+
+        foreach ($columns as $key => $value) {
+            if (is_numeric($key)) {
+                $this->parts[$part][] = [ $this->db->quoteIdentifier($value), 'ASC' ];
+            } else {
+                $this->parts[$part][] = [ $this->db->quoteIdentifier($key), strtoupper($value) == 'DESC' ? 'DESC' : 'ASC' ];
+            }
+        }
+    }
 
     public function groupBy($columns)
     {
         if (!$this->parts['group by']) {
             $this->parts['group by'] = [];
+        }
+
+        if (!is_array($columns)) {
+            $columns = [ $columns ];
+        }
+
+        foreach ($columns as $column) {
+            $this->parts['group by'][] = $this->db->quoteIdentifier($value);
         }
     }
 
@@ -156,6 +193,18 @@ class Query
     {
         if (!$this->parts['order by']) {
             $this->parts['order by'] = [];
+        }
+
+        if (!is_array($columns)) {
+            $columns = [ $columns ];
+        }
+
+        foreach ($columns as $key => $value) {
+            if (is_numeric($key)) {
+                $this->parts['order by'][] = $this->db->quoteIdentifier($value) . ' ASC';
+            } else {
+                $this->parts['order by'][] = $this->db->quoteIdentifier($key) . (strtoupper($value) == 'DESC' ? ' DESC' : ' ASC');
+            }
         }
     }
 
@@ -186,7 +235,55 @@ class Query
 
     public function __toString()
     {
-        $sql = $this->parts['what'];
+        $what = $sql = $this->parts['what'];
+        switch ($what) {
+            case 'SELECT':
+                $sql .= ' ' . ($this->parts['columns'] ? implode(', ', $this->parts['columns']) : '*');
+                if ($this->parts['from']) {
+                    $sql .= ' FROM ' . $this->parts['from'];
+                    if ($this->parts['join']) {
+                        $sql .= ' ' . implode(' ', $this->parts['join']);
+                    }
+                }
+                if ($this->parts['where']) {
+                    $sql .= ' WHERE ' . $this->parts['where']->stringify($this->db);
+                }
+                if ($this->parts['group by']) {
+                    $sql .= ' GROUP BY ' . implode(', ', $this->parts['group by']);
+                }
+                if ($this->parts['having']) {
+                    $sql .= ' HAVING ' . $this->parts['having']->stringify($this->db);
+                }
+                if ($this->parts['order by']) {
+                    $sql .= ' ORDER BY ' . implode(', ', $this->parts['order by']);
+                }
+                if ($this->parts['limit']) {
+                    $sql .= ' LIMIT ' . $this->parts['limit'];
+                    if ($this->parts['offset']) {
+                        $sql .= ' OFFSET ' . $this->parts['offset'];
+                    }
+                }
+                break;
+
+            case 'INSERT':
+            case 'INSERT IGNORE':
+                $sql .= ' INTO ' . $this->parts['table'];
+                break;
+        }
     }
 
+    public function getDb()
+    {
+        return $this->db;
+    }
+
+    public static function Value($value)
+    {
+        return new Value($value);
+    }
+
+    public static function Column($name)
+    {
+        return new Column($name);
+    }
 }

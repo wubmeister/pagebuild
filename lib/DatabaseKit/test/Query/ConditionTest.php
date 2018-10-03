@@ -4,6 +4,7 @@ use PHPUnit\Framework\TestCase;
 
 use DatabaseKit\Query\Condition;
 use DatabaseKit\Database;
+use DatabaseKit\Query;
 
 class DatabaseKit_Query_ConditionTest extends TestCase
 {
@@ -13,18 +14,19 @@ class DatabaseKit_Query_ConditionTest extends TestCase
     {
         parent::__construct();
         $this->database = new Database(null);
+        $this->query = new Query($this->database);
     }
 
     public function testEquals()
     {
-        $condition = new Condition('a', 'b');
+        $condition = new Condition($this->query, 'a', 'b');
         $this->assertEquals('"a" = ?', $condition->stringify($this->database));
         $bindValues = $condition->getBindValues();
         $this->assertInternalType('array', $bindValues);
         $this->assertCount(1, $bindValues);
         $this->assertEquals('b', $bindValues[0]);
 
-        $condition = new Condition('foo', 'bar');
+        $condition = new Condition($this->query, 'foo', 'bar');
         $this->assertEquals('"foo" = ?', $condition->stringify($this->database));
         $bindValues = $condition->getBindValues();
         $this->assertInternalType('array', $bindValues);
@@ -34,35 +36,35 @@ class DatabaseKit_Query_ConditionTest extends TestCase
 
     public function testOperands()
     {
-        $condition = new Condition('value', [ '$lt' => 42 ]);
+        $condition = new Condition($this->query, 'value', [ '$lt' => 42 ]);
         $this->assertEquals('"value" < ?', $condition->stringify($this->database));
         $bindValues = $condition->getBindValues();
         $this->assertInternalType('array', $bindValues);
         $this->assertCount(1, $bindValues);
         $this->assertEquals(42, $bindValues[0]);
 
-        $condition = new Condition('value', [ '$lte' => 42 ]);
+        $condition = new Condition($this->query, 'value', [ '$lte' => 42 ]);
         $this->assertEquals('"value" <= ?', $condition->stringify($this->database));
         $bindValues = $condition->getBindValues();
         $this->assertInternalType('array', $bindValues);
         $this->assertCount(1, $bindValues);
         $this->assertEquals(42, $bindValues[0]);
 
-        $condition = new Condition('value', [ '$gt' => 42 ]);
+        $condition = new Condition($this->query, 'value', [ '$gt' => 42 ]);
         $this->assertEquals('"value" > ?', $condition->stringify($this->database));
         $bindValues = $condition->getBindValues();
         $this->assertInternalType('array', $bindValues);
         $this->assertCount(1, $bindValues);
         $this->assertEquals(42, $bindValues[0]);
 
-        $condition = new Condition('value', [ '$gte' => 42 ]);
+        $condition = new Condition($this->query, 'value', [ '$gte' => 42 ]);
         $this->assertEquals('"value" >= ?', $condition->stringify($this->database));
         $bindValues = $condition->getBindValues();
         $this->assertInternalType('array', $bindValues);
         $this->assertCount(1, $bindValues);
         $this->assertEquals(42, $bindValues[0]);
 
-        $condition = new Condition('value', [ '$neq' => 42 ]);
+        $condition = new Condition($this->query, 'value', [ '$neq' => 42 ]);
         $this->assertEquals('"value" <> ?', $condition->stringify($this->database));
         $bindValues = $condition->getBindValues();
         $this->assertInternalType('array', $bindValues);
@@ -72,7 +74,7 @@ class DatabaseKit_Query_ConditionTest extends TestCase
 
     public function testBetween()
     {
-        $condition = new Condition('value', [ '$between' => [ 42, 84 ] ]);
+        $condition = new Condition($this->query, 'value', [ '$between' => [ 42, 84 ] ]);
         $this->assertEquals('"value" BETWEEN ? AND ?', $condition->stringify($this->database));
         $bindValues = $condition->getBindValues();
         $this->assertInternalType('array', $bindValues);
@@ -83,7 +85,7 @@ class DatabaseKit_Query_ConditionTest extends TestCase
 
     public function testIn()
     {
-        $condition = new Condition('value', [ '$in' => [ 42, 84, 126, 168 ] ]);
+        $condition = new Condition($this->query, 'value', [ '$in' => [ 42, 84, 126, 168 ] ]);
         $this->assertEquals('"value" IN (?, ?, ?, ?)', $condition->stringify($this->database));
         $bindValues = $condition->getBindValues();
         $this->assertInternalType('array', $bindValues);
@@ -96,26 +98,26 @@ class DatabaseKit_Query_ConditionTest extends TestCase
 
     public function testAnd()
     {
-        $condition = new Condition('$and', [ 'a' => 'b', 'foo' => 'bar' ]);
+        $condition = new Condition($this->query, '$and', [ 'a' => 'b', 'foo' => 'bar' ]);
         $this->assertEquals('("a" = ?) AND ("foo" = ?)', $condition->stringify($this->database));
     }
 
     public function testOr()
     {
-        $condition = new Condition('$or', [ 'a' => 'b', 'foo' => 'bar' ]);
+        $condition = new Condition($this->query, '$or', [ 'a' => 'b', 'foo' => 'bar' ]);
         $this->assertEquals('("a" = ?) OR ("foo" = ?)', $condition->stringify($this->database));
     }
 
     public function testNesting()
     {
-        $condition = new Condition('$and', [ 'a' => 'b', 'foo' => 'bar', '$or' => [ 'lorem' => 'ipsum', 'doler' => 'sit amet' ] ]);
+        $condition = new Condition($this->query, '$and', [ 'a' => 'b', 'foo' => 'bar', '$or' => [ 'lorem' => 'ipsum', 'doler' => 'sit amet' ] ]);
         $this->assertEquals('("a" = ?) AND ("foo" = ?) AND (("lorem" = ?) OR ("doler" = ?))', $condition->stringify($this->database));
     }
 
     public function testAppendCondition()
     {
-        $condition = new Condition('$and', [ 'a' => 'b', 'foo' => 'bar' ]);
-        $condition->appendCondition(new Condition('$and', [ 'lorem' => 'ipsum' ]));
+        $condition = new Condition($this->query, '$and', [ 'a' => 'b', 'foo' => 'bar' ]);
+        $condition->appendCondition(new Condition($this->query, 'lorem', 'ipsum'));
         $this->assertEquals('("a" = ?) AND ("foo" = ?) AND ("lorem" = ?)', $condition->stringify($this->database));
     }
 }
