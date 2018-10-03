@@ -100,6 +100,14 @@ class Condition
 
     public function getBindValues()
     {
+        if (is_array($this->conditions)) {
+            $bind = [];
+            foreach ($this->conditions as $condition) {
+                $bind = array_merge($bind, $condition->getBind());
+            }
+            return $bind;
+        }
+
         return $this->bind;
     }
 

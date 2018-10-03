@@ -116,10 +116,17 @@ class Query
     {
         $table = $this->tableDef($table);
 
-        if (!$this->parts['join'])
-        $this->parts['join'] =
+        if (!$this->parts['join']) {
+            $this->parts['join'] = [];
+            $this->parts['join bind'] = [];
+        }
+
+        $condition = $this->buildConditions($condition, self::GLUE_AND, Condition::RHP_COLUMN);
+
+        $this->parts['join'][] =
             strtoupper($type) . ' JOIN ' . $result['sql'] . ' ON ' .
-            $this->buildConditions($condition, self::GLUE_AND, Condition::RHP_COLUMN)->stringify($this->db);
+            $condition->stringify($this->db);
+        $this->parts['join bind'] = array_merge($this->parts['join bind'], $condition->getBind());
     }
 
     protected function whereHaving($part, $conditions, $operator)
@@ -233,9 +240,16 @@ class Query
         }
     }
 
-    public function __toString()
+    /**
+     * Executes the query.
+     *
+     * @return PDOStatement The resulting PDO statement
+     */
+    public function execute()
     {
+        // Build SQL and collect bind values
         $what = $sql = $this->parts['what'];
+        $bind = [];
         switch ($what) {
             case 'SELECT':
                 $sql .= ' ' . ($this->parts['columns'] ? implode(', ', $this->parts['columns']) : '*');
@@ -243,16 +257,21 @@ class Query
                     $sql .= ' FROM ' . $this->parts['from'];
                     if ($this->parts['join']) {
                         $sql .= ' ' . implode(' ', $this->parts['join']);
+                        if (count($this->parts['join bind']) > 0) {
+                            $bind = array_merge($bind, $this->parts['join bind']);
+                        }
                     }
                 }
                 if ($this->parts['where']) {
                     $sql .= ' WHERE ' . $this->parts['where']->stringify($this->db);
+                    $bind = array_merge($bind, $this->parts['where']->getBind());
                 }
                 if ($this->parts['group by']) {
                     $sql .= ' GROUP BY ' . implode(', ', $this->parts['group by']);
                 }
                 if ($this->parts['having']) {
                     $sql .= ' HAVING ' . $this->parts['having']->stringify($this->db);
+                    $bind = array_merge($bind, $this->parts['having']->getBind());
                 }
                 if ($this->parts['order by']) {
                     $sql .= ' ORDER BY ' . implode(', ', $this->parts['order by']);
@@ -267,9 +286,49 @@ class Query
 
             case 'INSERT':
             case 'INSERT IGNORE':
-                $sql .= ' INTO ' . $this->parts['table'];
+                $keys = [];
+                $values = [];
+                foreach (array_keys($this->parts['values']) as $index => $key) {
+                    $keys[] = $this->db->quoteIdentifier($key);
+                    $values[] = '?';
+                    $bind[] = $this->parts['values'][$key];
+                }
+                $sql .= ' INTO ' . $this->parts['table'] . ' (' . implode(', ', $keys) . ') VALUES (' . implode(', ', $values) . ')';
+                break;
+
+            case 'UPDATE':
+                $sets = [];
+                foreach (array_keys($this->parts['values']) as $index => $key) {
+                    $sets[] = $this->db->quoteIdentifier($key) . ' = ?';
+                    $bind[] = $this->parts['values'][$key];
+                }
+                $sql .= $this->parts['table'] . implode(', ', $sets);
+                if ($this->parts['where']) {
+                    $sql .= ' WHERE ' . $this->parts['where']->stringify($this->db);
+                    $bind = array_merge($bind, $this->parts['where']->getBind());
+                }
+                break;
+
+            case 'DELETE':
+                $sql .= ' FROM ' . ($this->parts['from'] ? $this->parts['from'] : $this->parts['table']);
+                if ($this->parts['where']) {
+                    $sql .= ' WHERE ' . $this->parts['where']->stringify($this->db);
+                    $bind = $this->parts['where']->getBind();
+                }
                 break;
         }
+
+        // Prepare and execute statement
+        $statement = $this->db->prepare($sql);
+        if (!$statement) {
+            throw new Exception('Filed to prepare statement');
+        }
+        foreach ($bind as $index => $value) {
+            $statement->bindValue($index + 1, $value);
+        }
+        $statement->execute();
+
+        return $statement;
     }
 
     public function getDb()
