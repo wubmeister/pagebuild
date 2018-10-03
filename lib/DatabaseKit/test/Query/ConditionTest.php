@@ -9,6 +9,7 @@ use DatabaseKit\Query;
 class DatabaseKit_Query_ConditionTest extends TestCase
 {
     protected $database;
+    protected $query;
 
     public function __construct()
     {

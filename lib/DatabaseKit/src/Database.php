@@ -101,7 +101,12 @@ class Database
 
     public function query($sql)
     {
-        return $this->pdo->query();
+        return $this->pdo->query($sql);
+    }
+
+    public function quote($value, $parameterType = \PDO::PARAM_STR)
+    {
+        return $this->pdo->quote($value, $parameterType);
     }
 
     public function rollBack()

@@ -103,7 +103,7 @@ class Condition
         if (is_array($this->conditions)) {
             $bind = [];
             foreach ($this->conditions as $condition) {
-                $bind = array_merge($bind, $condition->getBind());
+                $bind = array_merge($bind, $condition->getBindValues());
             }
             return $bind;
         }

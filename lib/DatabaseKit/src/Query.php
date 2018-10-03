@@ -13,61 +13,114 @@ use DatabaseKit\Query\Column;
  */
 class Query
 {
-    const RHP_VALUE = 1;
-    const RHP_COLUMN = 2;
-
     const GLUE_AND = 1;
     const GLUE_OR = 2;
 
     const IGNORE = 1;
     const UPDATE = 2;
 
+    /**
+     * The database.
+     * The query is linked to a database, which can quote identifiers and
+     * eventually execute the query.
+     * @var Database
+     */
     protected $db;
+
+    /**
+     * The query parts, like FROM, WHERE and ORDER BY.
+     * @var array
+     */
     protected $parts = [];
 
-    public function __construct($db)
+    /**
+     * Initializes the query with a linked database.
+     * The query is linked to a database, which can quote identifiers and
+     * eventually execute the query.
+     *
+     * @param Database $db The database
+     */
+    public function __construct(Database $db)
     {
         $this->db = $db;
     }
 
+    /**
+     * Makes this query a SELECT query
+     * @return Query $this
+     */
     public function select()
     {
         $this->parts['what'] = 'SELECT';
+        return $this;
     }
 
+    /**
+     * Makes this query a INSERT query
+     * @return Query $this
+     */
     public function insert()
     {
         $this->parts['what'] = 'INSERT';
+        return $this;
     }
 
+    /**
+     * Makes this query a UPDATE query
+     * @return Query $this
+     */
     public function update()
     {
         $this->parts['what'] = 'UPDATE';
+        return $this;
     }
 
+    /**
+     * Makes this query a DELETE query
+     * @return Query $this
+     */
     public function delete()
     {
         $this->parts['what'] = 'DELETE';
+        return $this;
     }
 
+    /**
+     * Creates a table reference, with an alias if necessary.
+     *
+     * @param string|array $table The table name: 'table_name' | [ 'alias' => 'table_name' ]
+     * @return array [
+     *           'ref' => 'The table reference to use throughout the query',
+     *           'table' => 'The real table name',
+     *           'sql' => 'The table identifier to use in FROM and JOIN (table_name AS alias)',
+     *         ]
+     */
     protected function tableDef($table)
     {
         $result = [];
 
         if (is_array($table)) {
-            $result['alias'] = current(array_keys($table));
+            $result['ref'] = current(array_keys($table));
             $result['table'] = $table[$alias];
             $result['sql'] = $this->db->quoteIdentifier($table) . ' AS ' . $this->db->quoteIdentifier($alias);
         } else {
-            $result['alias'] = $table;
+            $result['ref'] = $table;
             $result['table'] = $table;
             $result['sql'] = $this->db->quoteIdentifier($table);
         }
+
+        return $result;
     }
 
-    protected function addColumns($alias, $columns)
+    /**
+     * Add columns to the 'columns' part
+     *
+     * @param string $tableRef The table name or alias
+     * @param array $columns Array with columns
+     */
+    protected function addColumns($tableRef, $columns)
     {
-        $qAlias = $this->db->quoteIdentifier($alias);
+        $qAlias = $this->db->quoteIdentifier($tableRef);
 
         if (is_array($columns)) {
             foreach ($columns as $key => $column) {
@@ -84,32 +137,51 @@ class Query
 
     protected function buildConditions($array, $glue = self::GLUE_AND, $rightHandPolicy = Condition::RHP_VALUE)
     {
-        $conditions = $glue == self::GLUE_OR ? [ '$or' => $array ] : [ '$and' => $array ];
-        return new Condition($conditions);
+        $condition = $glue == self::GLUE_OR
+            ? new Condition($this, '$or', $array)
+            : new Condition($this, '$and', $array);
+        return $condition;
     }
 
+    /**
+     * Specifies a table to select or delete from.
+     *
+     * @param string|array $table The table to select or delete from
+     * @param array $columns The columns to select.
+     */
     public function from($table, $columns = '*')
     {
-        $table = $this->tableDef($table);
+        $result = $this->tableDef($table);
         $this->parts['from'] = $result['sql'];
 
         if (!isset($this->parts['columns'])) {
             $this->parts['columns'] = [];
         }
 
-        $this->addColumns($result['alias'], $columns);
+        $this->addColumns($result['ref'], $columns);
 
         return $this;
     }
 
     public function table($table)
     {
-        $table = $this->tableDef($table);
+        $result = $this->tableDef($table);
         $this->parts['table'] = $result['sql'];
 
-        $this->addColumns($result['alias'], $columns);
+        $this->addColumns($result['ref'], $columns);
 
         return $this;
+    }
+
+    /**
+     * Alias of {@see table()}
+     *
+     * @param string $table
+     * @return Query $this
+     */
+    public function into($table)
+    {
+        return $this->table($table);
     }
 
     public function join($type, $table, $condition, $columns)
@@ -126,7 +198,7 @@ class Query
         $this->parts['join'][] =
             strtoupper($type) . ' JOIN ' . $result['sql'] . ' ON ' .
             $condition->stringify($this->db);
-        $this->parts['join bind'] = array_merge($this->parts['join bind'], $condition->getBind());
+        $this->parts['join bind'] = array_merge($this->parts['join bind'], $condition->getBindValues());
     }
 
     protected function whereHaving($part, $conditions, $operator)
@@ -145,40 +217,25 @@ class Query
     public function where($conditions)
     {
         $this->whereHaving('where', $conditions, '$and');
+        return $this;
     }
 
     public function orWhere($conditions)
     {
         $this->whereHaving('where', $conditions, '$or');
+        return $this;
     }
 
     public function having($conditions)
     {
         $this->whereHaving('having', $conditions, '$and');
+        return $this;
     }
 
     public function orHaving($conditions)
     {
         $this->whereHaving('having', $conditions, '$or');
-    }
-
-    protected function groupOrder($part, $columns)
-    {
-        if (!$this->parts[$part]) {
-            $this->parts[$part] = [];
-        }
-
-        if (!is_array($columns)) {
-            $columns = [ $columns ];
-        }
-
-        foreach ($columns as $key => $value) {
-            if (is_numeric($key)) {
-                $this->parts[$part][] = [ $this->db->quoteIdentifier($value), 'ASC' ];
-            } else {
-                $this->parts[$part][] = [ $this->db->quoteIdentifier($key), strtoupper($value) == 'DESC' ? 'DESC' : 'ASC' ];
-            }
-        }
+        return $this;
     }
 
     public function groupBy($columns)
@@ -194,6 +251,8 @@ class Query
         foreach ($columns as $column) {
             $this->parts['group by'][] = $this->db->quoteIdentifier($value);
         }
+
+        return $this;
     }
 
     public function orderBy($columns)
@@ -213,21 +272,26 @@ class Query
                 $this->parts['order by'][] = $this->db->quoteIdentifier($key) . (strtoupper($value) == 'DESC' ? ' DESC' : ' ASC');
             }
         }
+
+        return $this;
     }
 
     public function limit($limit)
     {
         $this->parts['limit'] = $limit;
+        return $this;
     }
 
     public function offset($offset)
     {
         $this->parts['offset'] = $offset;
+        return $this;
     }
 
     public function values($values)
     {
-        $this->parts['values'] = $value;
+        $this->parts['values'] = $values;
+        return $this;
     }
 
     public function onDuplicateKey($action, $updates = null)
@@ -238,16 +302,12 @@ class Query
             $this->what = "INSERT";
             $this->parts['on duplicate key update'] = $updates;
         }
+
+        return $this;
     }
 
-    /**
-     * Executes the query.
-     *
-     * @return PDOStatement The resulting PDO statement
-     */
-    public function execute()
+    protected function buildSql($collectBind)
     {
-        // Build SQL and collect bind values
         $what = $sql = $this->parts['what'];
         $bind = [];
         switch ($what) {
@@ -257,21 +317,25 @@ class Query
                     $sql .= ' FROM ' . $this->parts['from'];
                     if ($this->parts['join']) {
                         $sql .= ' ' . implode(' ', $this->parts['join']);
-                        if (count($this->parts['join bind']) > 0) {
+                        if ($collectBind && count($this->parts['join bind']) > 0) {
                             $bind = array_merge($bind, $this->parts['join bind']);
                         }
                     }
                 }
                 if ($this->parts['where']) {
                     $sql .= ' WHERE ' . $this->parts['where']->stringify($this->db);
-                    $bind = array_merge($bind, $this->parts['where']->getBind());
+                    if ($collectBind) {
+                        $bind = array_merge($bind, $this->parts['where']->getBindValues());
+                    }
                 }
                 if ($this->parts['group by']) {
                     $sql .= ' GROUP BY ' . implode(', ', $this->parts['group by']);
                 }
                 if ($this->parts['having']) {
                     $sql .= ' HAVING ' . $this->parts['having']->stringify($this->db);
-                    $bind = array_merge($bind, $this->parts['having']->getBind());
+                    if ($collectBind) {
+                        $bind = array_merge($bind, $this->parts['having']->getBindValues());
+                    }
                 }
                 if ($this->parts['order by']) {
                     $sql .= ' ORDER BY ' . implode(', ', $this->parts['order by']);
@@ -291,7 +355,9 @@ class Query
                 foreach (array_keys($this->parts['values']) as $index => $key) {
                     $keys[] = $this->db->quoteIdentifier($key);
                     $values[] = '?';
-                    $bind[] = $this->parts['values'][$key];
+                    if ($collectBind) {
+                        $bind[] = $this->parts['values'][$key];
+                    }
                 }
                 $sql .= ' INTO ' . $this->parts['table'] . ' (' . implode(', ', $keys) . ') VALUES (' . implode(', ', $values) . ')';
                 break;
@@ -300,12 +366,16 @@ class Query
                 $sets = [];
                 foreach (array_keys($this->parts['values']) as $index => $key) {
                     $sets[] = $this->db->quoteIdentifier($key) . ' = ?';
-                    $bind[] = $this->parts['values'][$key];
+                    if ($collectBind) {
+                        $bind[] = $this->parts['values'][$key];
+                    }
                 }
-                $sql .= $this->parts['table'] . implode(', ', $sets);
+                $sql .= ' ' . $this->parts['table'] . ' SET ' . implode(', ', $sets);
                 if ($this->parts['where']) {
                     $sql .= ' WHERE ' . $this->parts['where']->stringify($this->db);
-                    $bind = array_merge($bind, $this->parts['where']->getBind());
+                    if ($collectBind) {
+                        $bind = array_merge($bind, $this->parts['where']->getBindValues());
+                    }
                 }
                 break;
 
@@ -313,10 +383,25 @@ class Query
                 $sql .= ' FROM ' . ($this->parts['from'] ? $this->parts['from'] : $this->parts['table']);
                 if ($this->parts['where']) {
                     $sql .= ' WHERE ' . $this->parts['where']->stringify($this->db);
-                    $bind = $this->parts['where']->getBind();
+                    if ($collectBind) {
+                        $bind = $this->parts['where']->getBindValues();
+                    }
                 }
                 break;
         }
+
+        return [ $sql, $bind ];
+    }
+
+    /**
+     * Executes the query.
+     *
+     * @return PDOStatement The resulting PDO statement
+     */
+    public function execute()
+    {
+        // Build SQL and collect bind values
+        list($sql, $bind) = $this->buildSql(true);
 
         // Prepare and execute statement
         $statement = $this->db->prepare($sql);
@@ -329,6 +414,27 @@ class Query
         $statement->execute();
 
         return $statement;
+    }
+
+    /**
+     * Returns the string version of the query.
+     * WARNING! Do not use this string to pass to your database engine as the
+     * filled in values may be unsafe. Use for debugging purposes only! To
+     * execute the query on the databse, use {@see execute()} instead.
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        list($sql, $bind) = $this->buildSql(true);
+        foreach ($bind as $value) {
+            $pos = strpos($sql, '?');
+            if ($pos !== false) {
+                $sql = substr_replace($sql, $this->db->quote($value), $pos, 1);
+            }
+        }
+
+        return $sql;
     }
 
     public function getDb()
