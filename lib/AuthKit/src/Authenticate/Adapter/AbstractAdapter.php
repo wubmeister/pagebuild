@@ -2,6 +2,8 @@
 
 namespace AuthKit\Authenticate\Adapter;
 
+use Psr\Http\Message\ServerRequestInterface;
+
 class AbstractAdapter
 {
     const STATUS_INITIAL = 0;
@@ -11,8 +13,9 @@ class AbstractAdapter
 
     protected $status = self::STATUS_INITIAL;
     protected $identity;
+    protected $error;
 
-    abstract public function handleRequest($request);
+    abstract public function handleRequest(ServerRequestInterface $request);
 
     public function getStatus()
     {
@@ -22,5 +25,10 @@ class AbstractAdapter
     public function getIdentity()
     {
         return $this->identity;
+    }
+
+    public function getError()
+    {
+        return $this->error;
     }
 }

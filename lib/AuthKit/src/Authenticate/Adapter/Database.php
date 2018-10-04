@@ -2,6 +2,7 @@
 
 namespace AuthKit\Authenticate\Adapter;
 
+use Psr\Http\Message\ServerRequestInterface;
 use AuthKit\Authenticate\Identity;
 
 class Database extends AbstractAdapter
@@ -49,7 +50,7 @@ class Database extends AbstractAdapter
         $this->saltColumn = $saltColumn;
     }
 
-    public function handleRequest($request)
+    public function handleRequest(ServerRequestInterface $request)
     {
         $username = $request->getAttribute($this->usernameAttr);
         $credential = $request->getAttribute($this->credentialAttr);
