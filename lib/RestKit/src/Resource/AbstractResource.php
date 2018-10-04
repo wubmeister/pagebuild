@@ -2,11 +2,14 @@
 
 namespace RestKit;
 
+use Psr\Http\Message\ServerRequestInterface;
+use Zend\Diactoros\Response\JsonResponse;
+
 abstract class AbstractResource
 {
     protected $request;
 
-    public function __invoke($request)
+    public function __invoke(ServerRequestInterface $request)
     {
         $this->request = $request;
 
@@ -44,6 +47,13 @@ abstract class AbstractResource
             'data' => $result
         ];
         return new JsonResponse($responseData);
+    }
+
+    public function trigger($event, ...$arguments)
+    {
+        if (method_exists($this, $event)) {
+            call_user_func_array([ $this, $event ], $arguments);
+        }
     }
 
     abstract public function index();
