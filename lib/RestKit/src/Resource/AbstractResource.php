@@ -4,10 +4,15 @@ namespace RestKit;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\Diactoros\Response\JsonResponse;
+use Zend\Diactoros\Response\HtmlResponse;
+use CoreKit\Resolver;
+use TemplateKit\Template;
 
 abstract class AbstractResource
 {
     protected $request;
+    protected $templateResolver;
+    protected $responseFormat;
 
     public function __invoke(ServerRequestInterface $request)
     {
@@ -46,6 +51,22 @@ abstract class AbstractResource
             'success' => true,
             'data' => $result
         ];
+
+        if ($this->responseFormat == 'html') {
+            $html = $action;
+            if ($this->templateResolver) {
+                $file = $this->templateResolver->resolve('resource/'.$action);
+                if ($file) {
+                    $template = new Template($file);
+                    foreach ($responseData as $key => $value) {
+                        $template->assign($key, $value);
+                    }
+                    $html = $template->render();
+                }
+            }
+            return new HtmlResponse($html);
+        }
+
         return new JsonResponse($responseData);
     }
 
@@ -54,6 +75,16 @@ abstract class AbstractResource
         if (method_exists($this, $event)) {
             call_user_func_array([ $this, $event ], $arguments);
         }
+    }
+
+    public function setTemplateResolver(Resolver $resolver)
+    {
+        $this->templateResolver = $resolver;
+    }
+
+    public function setResponseFormat(string $format)
+    {
+        $this->responseFormat = $format;
     }
 
     abstract public function index();
