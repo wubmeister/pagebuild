@@ -1,5 +1,5 @@
 {
-    "name": "Pagebuild",
+    "name": "wubmeister/pagebuild",
     "type": "project",
     "license": "Apache-2.0",
     "authors": [
@@ -10,10 +10,14 @@
             "role": "Developer"
         }
     ],
-    "autoload": {
-        "psr-4": {
-            "DatabaseKit\\": "lib/DatabaseKit/src/"
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/wubmeister/php-kit"
         }
+    ],
+    "require": {
+        "wubmeister/php-kit": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "^7"

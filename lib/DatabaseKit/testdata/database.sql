@@ -1,5 +1,0 @@
-CREATE DATABASE IF NOT EXISTS test;
-CREATE USER 'phpunit';
-SET PASSWORD FOR 'phpunit' = PASSWORD('phpunit');
-GRANT ALL ON test.* TO 'phpunit';
-FLUSH PRIVILEGES;
